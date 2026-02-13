@@ -197,18 +197,22 @@
                 
                 <a href="/detail/{{ $p->id }}" class="item-card animate-card" style="animation-delay: {{ $index * 0.1 }}s">
                     
-                    @if($p->foto_barang)
-                        <img src="{{ asset('storage/' . $p->foto_barang) }}" class="item-img">
-                    @else
-                        <div class="item-img d-flex align-items-center justify-content-center text-muted small">No Pic</div>
-                    @endif
-                    
-                    <div class="item-info">
-                        <div class="item-title">{{ $p->nama_barang }}</div>
-                        <div class="item-subtitle">Klik untuk detail</div>
-                    </div>
-
-                    <i class="fas fa-chevron-right arrow-icon"></i>
+                  @if(!empty($p->thumbnail))
+                            <img src="{{ asset('storage/' . $p->thumbnail) }}" class="item-img">
+                       @elseif(!empty($p->foto_barang)) 
+                            <img src="{{ asset('storage/' . $p->foto_barang) }}" class="item-img">
+                        @else
+                            <div class="item-img d-flex align-items-center justify-content-center bg-light text-muted small border">
+                                <i class="fas fa-image fa-lg"></i>
+                            </div>
+                        @endif
+                        
+                        <div class="item-info ms-3">
+                            <div class="item-title">{{ $p->nama_barang }}</div>
+                            <div class="item-subtitle text-muted small">Klik untuk detail</div>
+                        </div>
+    
+                        <i class="fas fa-chevron-right arrow-icon ms-auto"></i>
                 </a>
 
             </div>

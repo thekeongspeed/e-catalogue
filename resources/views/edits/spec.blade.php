@@ -70,16 +70,60 @@
                     <div class="col-md-6"><label class="small fw-bold text-muted">Nama Barang</label><input type="text" name="nama_barang" class="form-control" value="{{ $product->nama_barang }}"></div>
                     <div class="col-md-6"><label class="small fw-bold text-muted">Material</label><input type="text" name="jenis_material" class="form-control" value="{{ $product->jenis_material }}"></div>
                     <div class="col-md-6"><label class="small fw-bold text-muted">Finishing</label><input type="text" name="finishing" class="form-control" value="{{ $product->finishing }}"></div>
+                    <div class="col-md-6"><label class="small fw-bold text-muted">Type</label><input type="text" name="tipe" class="form-control" value="{{ $product->tipe }}"></div>
                 </div>
             </div>
 
-            <div class="section-card">
-                <div class="section-label"><i class="fas fa-ruler-combined me-2"></i> Dimensi (mm)</div>
-                <div class="row g-3">
-                    <div class="col-6 col-md-3"><label class="small fw-bold text-muted">Panjang</label><input type="number" step="0.1" name="panjang" class="form-control" value="{{ $product->panjang }}"></div>
-                    <div class="col-6 col-md-3"><label class="small fw-bold text-muted">Lebar</label><input type="number" step="0.1" name="lebar" class="form-control" value="{{ $product->lebar }}"></div>
-                    <div class="col-6 col-md-3"><label class="small fw-bold text-muted">Tinggi</label><input type="number" step="0.1" name="tinggi" class="form-control" value="{{ $product->tinggi }}"></div>
-                    <div class="col-6 col-md-3"><label class="small fw-bold text-muted">Kedalaman</label><input type="number" step="0.1" name="kedalaman" class="form-control" value="{{ $product->kedalaman }}"></div>
+            <div class="section-card mt-4">
+                <div class="section-label">
+                    <i class="fas fa-ruler-combined me-2"></i> Dimensi Produk (Edit Ukuran)
+                </div>
+
+                <div class="p-4">
+                    <table class="table table-borderless align-middle" id="dimensiTable">
+                        <thead>
+                            <tr class="border-bottom">
+                                <th style="width: 23%"><label class="small fw-bold text-muted">Panjang (mm)</label></th>
+                                <th style="width: 23%"><label class="small fw-bold text-muted">Lebar (mm)</label></th>
+                                <th style="width: 23%"><label class="small fw-bold text-muted">Tinggi (mm)</label></th>
+                                <th style="width: 23%"><label class="small fw-bold text-muted">Kedalaman (mm)</label></th>
+                                <th style="width: 8%" class="text-center"><label class="small fw-bold text-muted">Hapus</label></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if($dimensions->isEmpty())
+                                <tr>
+                                    <td class="p-2"><input type="number" name="dim_panjang[]" class="form-control" placeholder="0"></td>
+                                    <td class="p-2"><input type="number" name="dim_lebar[]" class="form-control" placeholder="0"></td>
+                                    <td class="p-2"><input type="number" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
+                                    <td class="p-2"><input type="number" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
+                                    <td class="text-center p-2">
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2" onclick="removeRow(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @else
+                                @foreach($dimensions as $dim)
+                                <tr>
+                                    <td class="p-2"><input type="number" name="dim_panjang[]" class="form-control" value="{{ $dim->panjang }}"></td>
+                                    <td class="p-2"><input type="number" name="dim_lebar[]" class="form-control" value="{{ $dim->lebar }}"></td>
+                                    <td class="p-2"><input type="number" name="dim_tinggi[]" class="form-control" value="{{ $dim->tinggi }}"></td>
+                                    <td class="p-2"><input type="number" name="dim_kedalaman[]" class="form-control" value="{{ $dim->kedalaman }}"></td>
+                                    <td class="text-center p-2">
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2" onclick="removeRow(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2" onclick="addDimensiRow()">
+                        <i class="fas fa-plus me-1"></i> Tambah Variasi Ukuran
+                    </button>
                 </div>
             </div>
 
@@ -147,6 +191,35 @@
                 reader.readAsDataURL(file);
             }
         }
+
+        function addDimensiRow() {
+                    let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
+                    let newRow = tbody.insertRow();
+                    
+                    newRow.innerHTML = `
+                        <td class="p-2"><input type="number" name="dim_panjang[]" class="form-control" placeholder="0"></td>
+                        <td class="p-2"><input type="number" name="dim_lebar[]" class="form-control" placeholder="0"></td>
+                        <td class="p-2"><input type="number" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
+                        <td class="p-2"><input type="number" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
+                        <td class="text-center p-2">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2" onclick="removeRow(this)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                }
+
+                function removeRow(btn) {
+                    let row = btn.parentNode.parentNode;
+                    let tbody = row.parentNode;
+                    if (tbody.rows.length > 1) {
+                        tbody.removeChild(row);
+                    } else {
+                        // Jika tinggal 1 baris, kosongkan saja nilainya jangan dihapus barisnya
+                        let inputs = row.getElementsByTagName('input');
+                        for(let i=0; i<inputs.length; i++) inputs[i].value = '';
+                    }
+                }
     </script>
 </body>
 </html>

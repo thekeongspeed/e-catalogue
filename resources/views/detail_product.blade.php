@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $product->nama_barang }} - Detail</title>
-    <title>E-Catalogue UT</title>
+    
     <link rel="icon" href="{{ asset('bg-watermark.png') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('bg-watermark.png') }}" type="image/x-icon">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -31,7 +30,7 @@
             background-position: center;
             background-repeat: no-repeat;
             background-size: 40%;
-            opacity: 0.08; /* Ubah ini untuk mengatur ketipisan */
+            opacity: 0.08;
             z-index: -1;
         }
 
@@ -48,10 +47,10 @@
         }
         .header-title { font-size: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         .btn-back { color: white; font-size: 24px; text-decoration: none; transition: 0.3s; }
-        .btn-back:hover { transform: translateX(-5px); }
+        .btn-back:hover { transform: translateX(-5px); color: #ccc; }
 
         /* --- BUTTONS --- */
-        .btn-group-action { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        .btn-group-action { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
         .action-btn {
             background-color: #1f6f38; color: white; border-radius: 50px;
             padding: 10px 25px; font-weight: 500; font-size: 14px;
@@ -63,9 +62,9 @@
         .image-container {
             position: relative; width: 100%; max-width: 700px; height: 450px;
             margin: 0 auto 40px auto; background: #fff; border-radius: 15px;
-            overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); border: 1px solid #eee;
         }
-        .clickable-image { cursor: zoom-in; }
+        .clickable-image { cursor: zoom-in; transition: transform 0.3s; }
         .zoom-icon {
             position: absolute; top: 15px; right: 15px;
             background: rgba(0,0,0,0.6); color: white; padding: 10px;
@@ -93,8 +92,10 @@
             font-size: 15px; color: #444; min-height: 200px;
             background: white; padding: 30px; border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            animation: fadeIn 0.5s;
         }
         .hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- SPECIFICATION TABLE STYLE --- */
         .spec-table {
@@ -107,9 +108,9 @@
         .spec-value { font-weight: 500; color: #222; }
         .spec-header { background-color: #e9ecef; font-weight: 700; color: #1a459c; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; }
 
-        /* --- PARTS DETAIL STYLE (NEW) --- */
+        /* --- PARTS DETAIL STYLE --- */
         .part-card {
-            display: flex; flex-direction: column; md-flex-direction: row;
+            display: flex; flex-direction: column; 
             background: #fff; border: 1px solid #eee; border-radius: 12px;
             overflow: hidden; margin-bottom: 20px; transition: 0.2s;
         }
@@ -120,7 +121,7 @@
             display: flex; align-items: center; justify-content: center;
             border-bottom: 1px solid #eee; cursor: zoom-in;
         }
-        .part-img-wrapper img { max-width: 100%; max-height: 100%; object-fit: cover; }
+        .part-img-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
         .part-details { padding: 20px; flex-grow: 1; }
         .part-title { font-size: 18px; font-weight: 700; color: #1a459c; margin-bottom: 15px; cursor: pointer; }
@@ -133,14 +134,21 @@
 
         @media (min-width: 768px) {
             .part-card { flex-direction: row; }
-            .part-img-wrapper { width: 200px; height: auto; border-bottom: none; border-right: 1px solid #eee; }
+            .part-img-wrapper { width: 220px; height: auto; border-bottom: none; border-right: 1px solid #eee; }
+        }
+
+        /* --- LIGHTBOX FIX --- */
+        .btn-close-lightbox {
+            position: absolute; top: 15px; right: 15px;
+            background: white; border-radius: 50%; opacity: 1; padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1056;
         }
     </style>
 </head>
 <body>
 
     <div class="navbar-custom">
-        <a href="/customer/{{ $product->nama_customer }}" class="btn-back"><i class="fas fa-chevron-left"></i></a>
+        <a href="/customer/{{ $product->nama_customer }}" class="btn-back"><i class="fas fa-arrow-left"></i></a>
         <div class="header-title">{{ $product->nama_customer }}</div>
         <div style="width: 24px;"></div>
     </div>
@@ -149,10 +157,9 @@
         
         <div class="btn-group-action">
             <a href="/print?id={{ $product->id }}" target="_blank" class="action-btn">
-    <i class="fas fa-file-pdf me-2"></i> Download PDF
-</a>
-            <a href="#" class="action-btn"><i class="fas fa-desktop me-2"></i> Presentation</a>
-        </div>
+                <i class="fas fa-file-pdf me-2"></i> Download PDF
+            </a>
+            </div>
 
         <div class="image-container">
             @if($gallery->isEmpty())
@@ -166,16 +173,21 @@
                             <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="{{ $key }}" class="{{ $key == 0 ? 'active' : '' }}"></button>
                         @endforeach
                     </div>
+                    
                     <div class="carousel-inner h-100">
                         @foreach($gallery as $key => $img)
                         <div class="carousel-item h-100 {{ $key == 0 ? 'active' : '' }}">
                             <div class="d-flex justify-content-center align-items-center h-100 bg-white position-relative">
-                                <img src="{{ asset('storage/' . $img->image_path) }}" class="clickable-image" style="max-height: 90%; max-width: 90%; object-fit: contain;" onclick="openLightbox(this.src)">
+                                <img src="{{ asset('storage/' . $img->image_path) }}" 
+                                     class="clickable-image" 
+                                     style="max-height: 90%; max-width: 90%; object-fit: contain;" 
+                                     onclick="openLightbox(this.src)">
                                 <i class="fas fa-search-plus zoom-icon"></i>
                             </div>
                         </div>
                         @endforeach
                     </div>
+                    
                     @if($gallery->count() > 1)
                         <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon bg-dark rounded-circle p-3"></span></button>
                         <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next"><span class="carousel-control-next-icon bg-dark rounded-circle p-3"></span></button>
@@ -194,44 +206,72 @@
 
         <div class="content-wrapper">
             
-           <div id="spec" class="content-area">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+            <div id="spec" class="content-area">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h5 class="fw-bold text-primary m-0"><i class="fas fa-clipboard-list me-2"></i> Technical Specification</h5>
+                    
                     @if(session('is_admin'))
-                        <a href="/edit-spec/{{ $product->id }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
-                            <i class="fas fa-edit me-1"></i> Edit Spec
-                        </a>
+                        <div>
+                            <a href="{{ url('/edit-spec/' . $product->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3 me-2">
+                                <i class="fas fa-edit me-1"></i> Edit Spec
+                            </a>
+                            <a href="{{ url('/delete-product/' . $product->id) }}" 
+                               class="btn btn-sm btn-danger rounded-pill px-3"
+                               onclick="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus produk {{ $product->nama_barang }}? \n\nData tidak bisa dikembalikan.')">
+                                <i class="fas fa-trash-alt me-1"></i> Hapus
+                            </a>
+                        </div>
                     @endif
                 </div>
                 
                 <table class="spec-table">
                     <tr><td colspan="2" class="spec-header">General Information</td></tr>
                     <tr><td class="spec-label">Nama Produk</td><td class="spec-value">{{ $product->nama_barang }}</td></tr>
+                    <tr><td class="spec-label">Customer</td><td class="spec-value">{{ $product->nama_customer }}</td></tr>
                     
                     <tr><td class="spec-label">Base Material</td><td class="spec-value">{{ $product->jenis_material ?? '-' }}</td></tr>
                     <tr><td class="spec-label">Finishing / Color</td><td class="spec-value">{{ $product->finishing ?? '-' }}</td></tr>
+                    <tr><td class="spec-label">Type / Series</td><td class="spec-value">{{ $product->tipe ?? '-' }}</td></tr>
 
-                    <tr><td colspan="2" class="spec-header">Product Dimension</td></tr>
-                    <tr><td class="spec-label">Panjang (Length)</td><td class="spec-value">{{ $product->panjang }} mm</td></tr>
-                    <tr><td class="spec-label">Lebar (Width)</td><td class="spec-value">{{ $product->lebar }} mm</td></tr>
-                    <tr><td class="spec-label">Tinggi (Height)</td><td class="spec-value">{{ $product->tinggi }} mm</td></tr>
-                    @if($product->kedalaman)
-                    <tr><td class="spec-label">Kedalaman (Depth)</td><td class="spec-value">{{ $product->kedalaman }} mm</td></tr>
+                    <tr><td colspan="2" class="spec-header">Product Dimension (Available Sizes)</td></tr>
+                    
+                    @if($dimensions->isEmpty())
+                        <tr>
+                            <td colspan="2" class="text-center text-muted fst-italic py-2">
+                                - Belum ada data dimensi -
+                            </td>
+                        </tr>
+                    @else
+                        @foreach($dimensions as $index => $dim)
+                        <tr>
+                            <td class="spec-label" style="vertical-align: top;">
+                                Opsi Ukuran #{{ $index + 1 }}
+                            </td>
+                            <td class="spec-value">
+                                <span class="badge bg-light text-dark border me-1">P: {{ floatval($dim->panjang) }}</span>
+                                <span class="badge bg-light text-dark border me-1">L: {{ floatval($dim->lebar) }}</span>
+                                <span class="badge bg-light text-dark border me-1">T: {{ floatval($dim->tinggi) }}</span>
+                                @if($dim->kedalaman)
+                                    <span class="badge bg-light text-dark border">D: {{ floatval($dim->kedalaman) }}</span>
+                                @endif
+                                <span class="text-muted small ms-1">mm</span>
+                            </td>
+                        </tr>
+                        @endforeach
                     @endif
                 </table>
                 <p class="small text-muted">* Spesifikasi dapat berubah disesuaikan dengan kebutuhan custom project.</p>
             </div>
 
-           <div id="parts" class="content-area hidden">
+            <div id="parts" class="content-area hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold text-primary m-0"><i class="fas fa-cubes me-2"></i> Component Details</h5>
                     @if(session('is_admin'))
-                        <a href="/edit-parts/{{ $product->id }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                        <a href="{{ url('/edit-parts/' . $product->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
                             <i class="fas fa-edit me-1"></i> Edit Parts
-                        </a>
+                        </a>        
                     @endif
                 </div>
-
                 
                 @if($items->isEmpty())
                     <div class="text-muted fst-italic py-3 text-center">- Belum ada data komponen parts -</div>
@@ -275,17 +315,15 @@
                 @endif
             </div>
 
-           <div id="project" class="content-area hidden">
+            <div id="project" class="content-area hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold text-primary m-0"><i class="fas fa-images me-2"></i> Project Implementation</h5>
                     @if(session('is_admin'))
-                        <a href="/edit-project/{{ $product->id }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                        <a href="{{ url('/edit-project/' . $product->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
                             <i class="fas fa-edit me-1"></i> Edit Project
                         </a>
                     @endif
                 </div>
-
-
                 
                 @if($projects->isEmpty())
                     <div class="alert alert-light border text-center py-5">
@@ -294,7 +332,7 @@
                     </div>
                 @else
                     <div class="row g-3">
-                       @foreach($projects as $proj)
+                        @foreach($projects as $proj)
                         <div class="col-6 col-md-4">
                             <div class="ratio ratio-4x3 rounded overflow-hidden shadow-sm border mb-2" style="cursor: zoom-in;" onclick="openLightbox('{{ asset('storage/' . $proj->image_path) }}')">
                                 <img src="{{ asset('storage/' . $proj->image_path) }}" class="img-fluid object-fit-cover">
@@ -309,17 +347,16 @@
                 @endif
             </div>
                 
-                </div>
-
         </div>
     </div>
 
     <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content bg-transparent border-0">
-                <div class="modal-body text-center position-relative">
-                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" style="z-index: 10; background-color: white; opacity: 1;"></button>
-                    <img id="lightboxImage" src="" class="img-fluid rounded shadow-lg" style="max-height: 85vh;">
+            <div class="modal-content bg-transparent border-0 position-relative">
+                <button type="button" class="btn-close btn-close-lightbox" data-bs-dismiss="modal" aria-label="Close"></button>
+                
+                <div class="modal-body text-center p-0">
+                    <img id="lightboxImage" src="" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
                 </div>
             </div>
         </div>
@@ -327,13 +364,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Tab Logic
         function openTab(tabId, element) {
+            // Hide all contents
             document.querySelectorAll('.content-area').forEach(el => el.classList.add('hidden'));
+            // Remove active class from buttons
             document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            
+            // Show selected content
             document.getElementById(tabId).classList.remove('hidden');
+            // Add active class to clicked button
             element.classList.add('active');
         }
 
+        // Lightbox Logic
         function openLightbox(imageSrc) {
             if(!imageSrc) return;
             document.getElementById('lightboxImage').src = imageSrc;

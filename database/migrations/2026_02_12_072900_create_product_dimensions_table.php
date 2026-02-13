@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up()
+{
+    Schema::create('product_dimensions', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+        $table->string('panjang')->nullable();
+        $table->string('lebar')->nullable();
+        $table->string('tinggi')->nullable();
+        $table->string('kedalaman')->nullable();
+        $table->timestamps();
+    });
+}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('product_dimensions');
+    }
+};

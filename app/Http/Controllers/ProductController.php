@@ -42,128 +42,183 @@ class ProductController extends Controller
 
     // --- PROSES INPUT (HANYA ADMIN) ---
  public function store(Request $request) {
-        if (!session('is_admin')) return redirect('/login');
-
-        // 1. Handle Upload Foto Utama (Multiple)
-        $thumbnailPath = null;
-        
-        // Cek jika ada file yang diupload
-        if ($request->hasFile('foto_barang')) {
-            // Ambil file pertama untuk jadi Thumbnail Dashboard
-            $thumbnailPath = $request->file('foto_barang')[0]->store('uploads', 'public');
-        }
-
-        // 2. Simpan Data Produk
+        // 1. Simpan Data Produk (Update: Tambah Color & Price)
         $productId = DB::table('products')->insertGetId([
             'nama_customer' => $request->nama_customer,
-            'nama_barang' => $request->nama_barang,
-            'nama_item' => 'Multi Item',
-            'panjang' => $request->panjang,
-            'lebar' => $request->lebar,
-            'tinggi' => $request->tinggi,
-            'kedalaman' => $request->kedalaman,
-            'jenis_material' => $request->jenis_material,
-            'finishing' => $request->finishing,
-            'foto_barang' => $thumbnailPath, // Simpan 1 foto untuk thumbnail
-            'created_at' => now(),
-            'updated_at' => now(),
+            'nama_barang'   => $request->nama_barang,
+            'jenis_material'=> $request->jenis_material,
+            'finishing'     => $request->finishing,
+            'tipe'          => $request->tipe,
+            
+            // KOLOM BARU
+            'color_available' => $request->color_available,
+            'price'           => $request->price,
+            
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ]);
 
-        // 3. Simpan SEMUA Foto ke Tabel Galeri (ProductImages)
+        // 2. Simpan Foto (Logic Hybrid tetap dipakai)
         if ($request->hasFile('foto_barang')) {
-            foreach($request->file('foto_barang') as $photo) {
+            foreach($request->file('foto_barang') as $key => $photo) {
                 $path = $photo->store('uploads', 'public');
                 DB::table('product_images')->insert([
-                    'product_id' => $productId,
-                    'image_path' => $path,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'product_id' => $productId, 'image_path' => $path, 'created_at' => now(), 'updated_at' => now(),
                 ]);
+                if ($key == 0) {
+                    DB::table('products')->where('id', $productId)->update(['foto_barang' => $path]);
+                }
             }
         }
 
-        // 4. Simpan Item Parts (Anak)
-        if ($request->has('items')) {
-            foreach ($request->items as $key => $itemData) {
-                // Skip jika nama item kosong
-                if (empty($itemData['name'])) continue;
+        // 3. Simpan Dimensi (Update: Tambah Item Code)
+        if ($request->has('dim_panjang')) {
+            $panjang = $request->dim_panjang;
+            $lebar   = $request->dim_lebar;
+            $tinggi  = $request->dim_tinggi;
+            $kedalam = $request->dim_kedalaman;
+            
+            // AMBIL ITEM CODE
+            $codes   = $request->dim_item_code; 
 
-                $fotoPath = null;
-                // Handle Upload Foto Part
-                if (isset($request->file('items')[$key]['image'])) {
-                    $fotoPath = $request->file('items')[$key]['image']->store('uploads', 'public');
+            for ($i = 0; $i < count($panjang); $i++) {
+                // Simpan jika salah satu data dimensi terisi
+                if (!empty($panjang[$i]) || !empty($lebar[$i]) || !empty($tinggi[$i])) {
+                    DB::table('product_dimensions')->insert([
+                        'product_id' => $productId,
+                        'item_code'  => $codes[$i] ?? null, // Simpan Item Code
+                        'panjang'    => $panjang[$i],
+                        'lebar'      => $lebar[$i],
+                        'tinggi'     => $tinggi[$i],
+                        'kedalaman'  => $kedalam[$i],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
+        // 4. Simpan Parts (Update: Nama Jadi Optional)
+        if ($request->items) {
+            foreach ($request->items as $itemData) {
+                // Hapus pengecekan 'empty name continue', biar bisa simpan walau nama kosong
+                // Asalkan ada gambar atau tipe, kita simpan.
+                
+                // Cek minimal salah satu field terisi agar tidak nyampah record kosong
+                if (empty($itemData['name']) && !isset($itemData['image']) && empty($itemData['tipe'])) {
+                    continue; 
                 }
 
-                DB::table('product_items')->insert([
+                $dataPart = [
                     'product_id' => $productId,
-                    'nama_item' => $itemData['name'],
-                    'foto_item' => $fotoPath,
-                    
-                    // KOLOM BARU YANG DITAMBAHKAN
+                    'nama_item' => $itemData['name'] ?? null, // Boleh null
                     'tipe' => $itemData['tipe'] ?? null,
                     'dimensi_part' => $itemData['dimensi'] ?? null,
                     'konfigurasi' => $itemData['konfigurasi'] ?? null,
                     'load_capacity' => $itemData['load'] ?? null,
-                    
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]);
+                ];
+                if (isset($itemData['image'])) {
+                    $dataPart['foto_item'] = $itemData['image']->store('uploads', 'public');
+                }
+                DB::table('product_items')->insert($dataPart);
             }
         }
 
-      // 5. Simpan Project Reference (DENGAN TEMPAT)
+        // 5. Simpan Project Reference (Tetap sama)
         if ($request->hasFile('project_images')) {
-            // Kita loop berdasarkan file gambar
             foreach($request->file('project_images') as $key => $img) {
                 $path = $img->store('uploads', 'public');
-                
-                // Ambil teks tempat berdasarkan index ($key) yang sama dengan gambar
                 $placeText = $request->project_places[$key] ?? null; 
-
                 DB::table('project_references')->insert([
-                    'product_id' => $productId,
-                    'image_path' => $path,
-                    'place' => $placeText, // Simpan Tempat
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'product_id' => $productId, 'image_path' => $path, 'place' => $placeText, 'created_at' => now(), 'updated_at' => now(),
                 ]);
             }
         }
 
-        return back()->with('success', 'Data Katalog berhasil disimpan!');
+        return redirect('/')->with('success', 'Data Katalog berhasil disimpan!');
     }
 
-   public function customerPage(Request $request, $name) {
-        // 1. Mulai Query Dasar (Filter Customer dulu)
+
+public function customerPage(Request $request, $name) {
+        // 1. Siapkan Query Dasar
         $query = DB::table('products')->where('nama_customer', $name);
 
-        // 2. Cek apakah ada pencarian?
+        // 2. Filter Search (Jika Ada)
         if ($request->has('search') && $request->search != '') {
-            $keyword = $request->search;
-            // Filter nama barang yang MIRIP dengan keyword
-            $query->where('nama_barang', 'LIKE', '%' . $keyword . '%');
+            $query->where('nama_barang', 'LIKE', '%' . $request->search . '%');
         }
 
-        // 3. Eksekusi Query
-        $products = $query->get();
-
-        // 4. Ambil Foto Utama untuk setiap produk (Thumbnail)
-        foreach($products as $p) {
-            $p->thumbnail = DB::table('product_images')
-                            ->where('product_id', $p->id)
-                            ->value('image_path');
-        }
+        // 3. QUERY UTAMA (JURUS SUBQUERY)
+        // Kita ambil semua kolom produk (*)
+        // DAN kita paksa ambil 1 'image_path' dari tabel product_images sebagai kolom 'thumbnail'
+        $products = $query
+            ->select('products.*')
+            ->addSelect(DB::raw('(SELECT image_path FROM product_images WHERE product_images.product_id = products.id LIMIT 1) as thumbnail'))
+            ->orderBy('id', 'desc')
+            ->get();
 
         return view('customer_page', compact('products', 'name'));
     }
-    
-    // --- HAPUS DATA (HANYA ADMIN) ---
-    public function destroy($id) {
-        if (!session('is_admin')) return redirect('/login');
+
+
+
+    // --- FUNGSI HAPUS BARANG & GAMBAR ---
+   public function destroyProduct($id) {
         
+        // 1. PENTING: Ambil data produk DULU sebelum dihapus
+        $product = DB::table('products')->where('id', $id)->first();
+
+        // Validasi kecil: jika produk tidak ditemukan (mungkin sudah terhapus duluan)
+        if (!$product) {
+            return redirect()->back()->with('error', 'Data produk tidak ditemukan.');
+        }
+
+        // 2. Simpan nama customer ke variabel sementara
+        // Kita butuh ini untuk redirect di baris paling bawah nanti
+        $customerName = $product->nama_customer;
+
+
+        // --- MULAI PROSES HAPUS GAMBAR & DATA ---
+
+        // A. Hapus Gallery
+        $gallery = DB::table('product_images')->where('product_id', $id)->get();
+        foreach($gallery as $img) {
+            if ($img->image_path && Storage::exists('public/' . $img->image_path)) {
+                Storage::delete('public/' . $img->image_path);
+            }
+        }
+        DB::table('product_images')->where('product_id', $id)->delete();
+
+        // B. Hapus Parts
+        $items = DB::table('product_items')->where('product_id', $id)->get();
+        foreach($items as $item) {
+            if ($item->foto_item && Storage::exists('public/' . $item->foto_item)) {
+                Storage::delete('public/' . $item->foto_item);
+            }
+        }
+        DB::table('product_items')->where('product_id', $id)->delete();
+
+        // C. Hapus Projects
+        $projects = DB::table('project_references')->where('product_id', $id)->get();
+        foreach($projects as $proj) {
+            if ($proj->image_path && Storage::exists('public/' . $proj->image_path)) {
+                Storage::delete('public/' . $proj->image_path);
+            }
+        }
+        DB::table('project_references')->where('product_id', $id)->delete();
+
+        // D. Hapus Produk Utama
         DB::table('products')->where('id', $id)->delete();
-        return back()->with('success', 'Data berhasil dihapus');
+
+
+        // 3. REDIRECT KEMBALI KE HALAMAN CUSTOMER
+        // Gunakan variabel $customerName yang sudah kita simpan di langkah no. 2
+        return redirect('/customer/' . $customerName)->with('success', 'Barang berhasil dihapus!');
     }
+
+
 
     // --- CETAK PDF ---
 
@@ -182,26 +237,25 @@ class ProductController extends Controller
         $gallery = DB::table('product_images')->where('product_id', $product->id)->get();
         $items = DB::table('product_items')->where('product_id', $product->id)->get();
         $projects = DB::table('project_references')->where('product_id', $product->id)->get();
+        $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
 
         // Load View PDF Satuan (print_product.blade.php)
-        $pdf = \PDF::loadView('print_product', compact('product', 'gallery', 'items', 'projects'));
+        $pdf = \PDF::loadView('print_product', compact('product', 'gallery', 'items', 'projects', 'dimensions'));
         $pdf->setPaper('A4', 'portrait');
         
         return $pdf->stream('Produk-' . $product->nama_barang . '.pdf');
     }
 
 
-    public function printCustomer(Request $request) {
-        $name = $request->query('name'); // Ambil nama customer dari URL
+   public function printCustomer(Request $request) {
+        $name = $request->query('name');
         
-        // 1. Ambil SEMUA produk milik customer ini
         $products = DB::table('products')->where('nama_customer', $name)->get();
 
         if ($products->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada produk untuk customer ini.');
         }
 
-        // 2. Siapkan array untuk menampung data lengkap setiap produk
         $data = [];
 
         foreach($products as $p) {
@@ -210,16 +264,18 @@ class ProductController extends Controller
                 'gallery' => DB::table('product_images')->where('product_id', $p->id)->get(),
                 'items'   => DB::table('product_items')->where('product_id', $p->id)->get(),
                 'projects'=> DB::table('project_references')->where('product_id', $p->id)->get(),
+                
+                // TAMBAHKAN BARIS INI: Ambil data dimensi
+                'dimensions' => DB::table('product_dimensions')->where('product_id', $p->id)->get(),
             ];
         }
 
-        // 3. Load View PDF Khusus Katalog (print_catalog)
-        // Kita kirim variabel $data yang berisi list semua produk
         $pdf = \PDF::loadView('print_catalog', compact('data', 'name'));
         $pdf->setPaper('A4', 'portrait');
         
         return $pdf->stream('Katalog-Lengkap-' . $name . '.pdf');
     }
+    
 
     // --- HALAMAN KHUSUS CUSTOMER ---
     public function showCustomer($name) {
@@ -233,13 +289,21 @@ class ProductController extends Controller
         return view('customer_page', compact('products', 'name'));
     }
 
-    public function manageData() {
-    if (!session('is_admin')) return redirect('/login');
+   public function manageData() {
+        if (!session('is_admin')) return redirect('/login');
 
-    // Gunakan view input lama, atau copy view input.blade.php yang lama ke sini
-    $products = DB::table('products')->orderBy('id', 'desc')->get();
-    return view('input', compact('products')); // Pastikan file input.blade.php masih ada
-}
+        // Ambil daftar customer unik untuk Dropdown
+        $customerList = DB::table('products')
+                        ->select('nama_customer')
+                        ->distinct()
+                        ->pluck('nama_customer'); // Mengambil array nama saja
+
+        // Ambil data produk untuk tabel list di bawah form (jika ada)
+        $products = DB::table('products')->orderBy('id', 'desc')->get();
+        
+        // Kirim variabel $customerList ke view
+        return view('input', compact('products', 'customerList')); 
+    }
 
 // --- HALAMAN DETAIL PRODUK (SINGLE PAGE) ---
    public function detailProduct($id) {
@@ -252,8 +316,9 @@ class ProductController extends Controller
         // TAMBAHAN: Ambil Galeri Foto untuk Slideshow
         $gallery = DB::table('product_images')->where('product_id', $id)->get();
         $projects = DB::table('project_references')->where('product_id', $id)->get();
+        $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
 
-        return view('detail_product', compact('product', 'items', 'gallery', 'projects'));
+        return view('detail_product', compact('product', 'items', 'gallery', 'projects', 'dimensions'));
     }
 
     // --- MENAMPILKAN FORM EDIT ---
@@ -270,8 +335,9 @@ class ProductController extends Controller
         // 3. Ambil Data Item Parts
         $items = DB::table('product_items')->where('product_id', $id)->get();
         $projects = DB::table('project_references')->where('product_id', $id)->get();
+        $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
         // Kirim semua data ke view baru 'edit.blade.php'
-        return view('edit', compact('product', 'gallery', 'items', 'projects'));
+        return view('edit', compact('product', 'gallery', 'items', 'projects', 'dimensions'));
     }
 
 
@@ -416,24 +482,23 @@ class ProductController extends Controller
         if (!session('is_admin')) return redirect('/login');
         $product = DB::table('products')->where('id', $id)->first();
         $gallery = DB::table('product_images')->where('product_id', $id)->get();
-        return view('edits.spec', compact('product', 'gallery'));
+        $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
+        return view('edits.spec', compact('product', 'gallery', 'dimensions'));
     }
 
     public function updateSpec(Request $request, $id) {
-        // A. Update Info Utama
+        // 1. Update Info Utama Produk
         DB::table('products')->where('id', $id)->update([
             'nama_customer' => $request->nama_customer,
-            'nama_barang' => $request->nama_barang,
-            'panjang' => $request->panjang,
-            'lebar' => $request->lebar,
-            'tinggi' => $request->tinggi,
-            'kedalaman' => $request->kedalaman,
-            'jenis_material' => $request->jenis_material,
-            'finishing' => $request->finishing,
-            'updated_at' => now(),
+            'nama_barang'   => $request->nama_barang,
+            'jenis_material'=> $request->jenis_material,
+            'finishing'     => $request->finishing,
+            'tipe'          => $request->tipe,
+            // 'panjang', 'lebar' JANGAN diupdate ke tabel products lagi
+            'updated_at'    => now(),
         ]);
 
-        // B. Update Gallery (Hapus & Tambah)
+        // 2. Update Gallery (Logic Lama - Sudah Benar)
         if ($request->has('delete_gallery_ids')) {
             foreach($request->delete_gallery_ids as $imgId) {
                 $img = DB::table('product_images')->where('id', $imgId)->first();
@@ -452,7 +517,34 @@ class ProductController extends Controller
             }
         }
 
-        return redirect('/detail/' . $id . '#spec')->with('success', 'Spesifikasi berhasil diupdate!');
+        // 3. UPDATE DIMENSI (Logic Baru: Hapus Semua -> Insert Ulang)
+        // Ini cara paling aman untuk one-to-many editing
+        if ($request->has('dim_panjang')) {
+            // A. Hapus dimensi lama
+            DB::table('product_dimensions')->where('product_id', $id)->delete();
+
+            // B. Masukkan dimensi baru dari form edit
+            $panjang = $request->dim_panjang;
+            $lebar   = $request->dim_lebar;
+            $tinggi  = $request->dim_tinggi;
+            $kedalam = $request->dim_kedalaman;
+
+            for ($i = 0; $i < count($panjang); $i++) {
+                if (!empty($panjang[$i]) || !empty($lebar[$i])) {
+                    DB::table('product_dimensions')->insert([
+                        'product_id' => $id,
+                        'panjang'    => $panjang[$i],
+                        'lebar'      => $lebar[$i],
+                        'tinggi'     => $tinggi[$i],
+                        'kedalaman'  => $kedalam[$i],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
+        return redirect('/detail/' . $id . '#spec')->with('success', 'Spesifikasi & Dimensi berhasil diupdate!');
     }
 
     // ==========================================
@@ -466,32 +558,44 @@ class ProductController extends Controller
     }
 
     public function updateParts(Request $request, $id) {
-        // Hapus Part
+        // 1. Hapus Part yang dicentang
         if ($request->has('delete_part_ids')) {
+            // Opsional: Hapus file gambarnya juga
+            $partsToDelete = DB::table('product_items')->whereIn('id', $request->delete_part_ids)->get();
+            foreach($partsToDelete as $p) {
+                if($p->foto_item) Storage::disk('public')->delete($p->foto_item);
+            }
             DB::table('product_items')->whereIn('id', $request->delete_part_ids)->delete();
         }
 
-        // Update/Insert Part
+        // 2. Update/Insert Part
         if ($request->has('items')) {
-            foreach ($request->items as $itemData) {
+            // PENTING: Gunakan $key untuk akses File
+            foreach ($request->items as $key => $itemData) {
+                
                 if (empty($itemData['name'])) continue;
 
                 $dataToSave = [
-                    'nama_item' => $itemData['name'],
-                    'tipe' => $itemData['tipe'] ?? null,
-                    'dimensi_part' => $itemData['dimensi'] ?? null,
-                    'konfigurasi' => $itemData['konfigurasi'] ?? null,
+                    'nama_item'     => $itemData['name'],
+                    'tipe'          => $itemData['tipe'] ?? null,
+                    'dimensi_part'  => $itemData['dimensi'] ?? null,
+                    'konfigurasi'   => $itemData['konfigurasi'] ?? null,
                     'load_capacity' => $itemData['load'] ?? null,
-                    'updated_at' => now(),
+                    'updated_at'    => now(),
                 ];
 
-                if (isset($itemData['image'])) {
-                    $dataToSave['foto_item'] = $itemData['image']->store('uploads', 'public');
+                // PERBAIKAN UPLOAD GAMBAR DISINI
+                // Cek apakah ada file di index array yang sesuai ($key)
+                if ($request->hasFile("items.$key.image")) {
+                    $path = $request->file("items.$key.image")->store('uploads', 'public');
+                    $dataToSave['foto_item'] = $path;
                 }
 
                 if (isset($itemData['id'])) {
+                    // Update Item Lama
                     DB::table('product_items')->where('id', $itemData['id'])->update($dataToSave);
                 } else {
+                    // Insert Item Baru
                     $dataToSave['product_id'] = $id;
                     $dataToSave['created_at'] = now();
                     DB::table('product_items')->insert($dataToSave);
@@ -500,6 +604,7 @@ class ProductController extends Controller
         }
         return redirect('/detail/' . $id . '#parts')->with('success', 'Parts berhasil diupdate!');
     }
+    
 
     // ==========================================
     // 3. FITUR EDIT PROJECT REFERENCE

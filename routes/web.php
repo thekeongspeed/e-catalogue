@@ -40,4 +40,31 @@ Route::put('/update-project/{id}', [ProductController::class, 'updateProject']);
 
 // Route untuk memproses UPDATE data (menggunakan method PUT)
 Route::put('/update/{id}', [ProductController::class, 'updateData']);
+// Route untuk menghapus produk
+Route::get('/delete-product/{id}', [ProductController::class, 'destroyProduct']);
 
+
+
+// --- ROUTE PERBAIKAN DATA OTOMATIS ---
+Route::get('/fix-images', function () {
+    // 1. Ambil semua produk
+    $products = DB::table('products')->get();
+    $count = 0;
+
+    foreach($products as $p) {
+        // Cek jika kolom foto_barang di tabel utama KOSONG
+        if (empty($p->foto_barang)) {
+            // Cari gambar di tabel gallery (product_images)
+            $img = DB::table('product_images')->where('product_id', $p->id)->first();
+            
+            // Jika ketemu, COPY path-nya ke tabel utama
+            if ($img) {
+                DB::table('products')
+                    ->where('id', $p->id)
+                    ->update(['foto_barang' => $img->image_path]);
+                $count++;
+            }
+        }
+    }
+    return "Berhasil memperbaiki $count produk! Silakan buka halaman Katalog sekarang.";
+});
