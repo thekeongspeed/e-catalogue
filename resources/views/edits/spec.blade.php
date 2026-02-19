@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Spesifikasi - {{ $product->nama_barang }}</title>
-    <title>E-Catalogue UT</title>
+    <title>Edit Spesifikasi - {{ $product->nama_barang ?? 'Produk' }}</title>
     <link rel="icon" href="{{ asset('bg-watermark.png') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('bg-watermark.png') }}" type="image/x-icon">
     
@@ -25,7 +24,7 @@
             background-position: center;
             background-repeat: no-repeat;
             background-size: 40%;
-            opacity: 0.08; /* Ubah ini untuk mengatur ketipisan */
+            opacity: 0.08;
             z-index: -1;
         }
         .navbar-custom { background-color: #1a459c; padding: 15px 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
@@ -37,12 +36,10 @@
         
         .form-control { border-radius: 10px; border: 1px solid #ddd; padding: 10px 15px; font-size: 14px; }
 
-        /* Style Foto Lama */
         .existing-img-wrapper { position: relative; width: 100px; height: 100px; border-radius: 10px; overflow: hidden; border: 2px solid #eee; background: white; }
         .existing-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .delete-overlay { position: absolute; inset: 0; background: rgba(220,53,69,0.9); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transition: 0.2s; cursor: pointer; }
         
-        /* Checkbox hidden tapi men-trigger overlay */
         .del-check:checked + img + .delete-overlay { opacity: 1; }
         .del-check { position: absolute; top: 5px; right: 5px; z-index: 10; accent-color: red; width: 16px; height: 16px; cursor: pointer; }
 
@@ -55,171 +52,196 @@
 <body>
 
     <div class="navbar-custom d-flex align-items-center">
-        <a href="/detail/{{ $product->id }}" class="btn-back me-3"><i class="fas fa-arrow-left"></i></a>
+        <a href="/detail/{{ $product->id ?? '' }}" class="btn-back me-3"><i class="fas fa-arrow-left"></i></a>
         <div class="header-title">Edit Spesifikasi</div>
     </div>
 
     <div class="container">
-        <form action="/update-spec/{{ $product->id }}" method="POST" enctype="multipart/form-data">
-            @csrf @method('PUT')
-
+        <form action="/update-spec/{{ $product->id ?? '' }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
             <div class="section-card">
-                <div class="section-label"><i class="fas fa-info-circle me-2"></i> Informasi Produk</div>
+                <div class="section-label"><i class="fas fa-info-circle me-2"></i> Informasi Dasar</div>
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Customer</label><input type="text" name="nama_customer" class="form-control" value="{{ $product->nama_customer }}"></div>
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Barang</label><input type="text" name="nama_barang" class="form-control" value="{{ $product->nama_barang }}"></div>
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Material</label><input type="text" name="jenis_material" class="form-control" value="{{ $product->jenis_material }}"></div>
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Finishing</label><input type="text" name="finishing" class="form-control" value="{{ $product->finishing }}"></div>
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Type</label><input type="text" name="tipe" class="form-control" value="{{ $product->tipe }}"></div>
+                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Customer</label><input type="text" name="nama_customer" class="form-control" value="{{ $product->nama_customer ?? '' }}"></div>
+                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Barang</label><input type="text" name="nama_barang" class="form-control" value="{{ $product->nama_barang ?? '' }}"></div>
+                    <div class="col-md-4"><label class="small fw-bold text-muted">Material</label><input type="text" name="jenis_material" class="form-control" value="{{ $product->jenis_material ?? '' }}"></div>
+                    <div class="col-md-4"><label class="small fw-bold text-muted">Finishing</label><input type="text" name="finishing" class="form-control" value="{{ $product->finishing ?? '' }}"></div>
+                    <div class="col-md-4"><label class="small fw-bold text-muted">Tipe</label><input type="text" name="tipe" class="form-control" value="{{ $product->tipe ?? '' }}"></div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Color Available</label>
+                        <input type="text" name="color_available" class="form-control" value="{{ $product->color_available ?? '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Price (Rp)</label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold">Rp</span>
+                            <input type="text" class="form-control" 
+                                   value="{{ !empty($product->price) ? number_format($product->price, 0, ',', '.') : '' }}" 
+                                   onkeyup="formatRupiah(this)">
+                            <input type="hidden" name="price" id="price_actual" value="{{ $product->price ?? '' }}">
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="section-card mt-4">
-                <div class="section-label">
-                    <i class="fas fa-ruler-combined me-2"></i> Dimensi Produk (Edit Ukuran)
-                </div>
-
-                <div class="p-4">
-                    <table class="table table-borderless align-middle" id="dimensiTable">
-                        <thead>
-                            <tr class="border-bottom">
-                                <th style="width: 23%"><label class="small fw-bold text-muted">Panjang (mm)</label></th>
-                                <th style="width: 23%"><label class="small fw-bold text-muted">Lebar (mm)</label></th>
-                                <th style="width: 23%"><label class="small fw-bold text-muted">Tinggi (mm)</label></th>
-                                <th style="width: 23%"><label class="small fw-bold text-muted">Kedalaman (mm)</label></th>
-                                <th style="width: 8%" class="text-center"><label class="small fw-bold text-muted">Hapus</label></th>
+                <div class="section-label"><i class="fas fa-ruler-combined me-2"></i> Dimensi Produk</div>
+                <table class="table table-borderless align-middle" id="dimensiTable">
+                    <thead>
+                        <tr class="border-bottom">
+                            <th style="width: 15%">Item Code</th>
+                            <th>Panjang</th> <th>Lebar</th> <th>Tinggi</th> <th>Kedalaman</th> <th>Hapus</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(isset($dimensions) && count($dimensions) > 0)
+                            @foreach($dimensions as $dim)
+                            <tr>
+                                <td><input type="text" name="dim_item_code[]" class="form-control" value="{{ $dim->item_code ?? '' }}" placeholder="Code"></td>
+                                <td><input type="number" step="0.01" name="dim_panjang[]" class="form-control" value="{{ $dim->panjang ?? '' }}"></td>
+                                <td><input type="number" step="0.01" name="dim_lebar[]" class="form-control" value="{{ $dim->lebar ?? '' }}"></td>
+                                <td><input type="number" step="0.01" name="dim_tinggi[]" class="form-control" value="{{ $dim->tinggi ?? '' }}"></td>
+                                <td><input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" value="{{ $dim->kedalaman ?? '' }}"></td>
+                                <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @if($dimensions->isEmpty())
-                                <tr>
-                                    <td class="p-2"><input type="number" name="dim_panjang[]" class="form-control" placeholder="0"></td>
-                                    <td class="p-2"><input type="number" name="dim_lebar[]" class="form-control" placeholder="0"></td>
-                                    <td class="p-2"><input type="number" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
-                                    <td class="p-2"><input type="number" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
-                                    <td class="text-center p-2">
-                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2" onclick="removeRow(this)">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @else
-                                @foreach($dimensions as $dim)
-                                <tr>
-                                    <td class="p-2"><input type="number" name="dim_panjang[]" class="form-control" value="{{ $dim->panjang }}"></td>
-                                    <td class="p-2"><input type="number" name="dim_lebar[]" class="form-control" value="{{ $dim->lebar }}"></td>
-                                    <td class="p-2"><input type="number" name="dim_tinggi[]" class="form-control" value="{{ $dim->tinggi }}"></td>
-                                    <td class="p-2"><input type="number" name="dim_kedalaman[]" class="form-control" value="{{ $dim->kedalaman }}"></td>
-                                    <td class="text-center p-2">
-                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2" onclick="removeRow(this)">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            @endif
-                        </tbody>
-                    </table>
-
-                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2" onclick="addDimensiRow()">
-                        <i class="fas fa-plus me-1"></i> Tambah Variasi Ukuran
-                    </button>
-                </div>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
+                                <td><input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0"></td>
+                                <td><input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0"></td>
+                                <td><input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
+                                <td><input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
+                                <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-success btn-sm mt-2" onclick="addDimensiRow()"><i class="fas fa-plus me-1"></i> Tambah Variasi Ukuran</button>
             </div>
+<div class="section-card">
+        <div class="section-label"><i class="fas fa-images me-2"></i> Foto Gallery</div>
 
-            <div class="section-card">
-                <div class="section-label"><i class="fas fa-images me-2"></i> Foto Gallery</div>
+        
+       @if(count($gallery) > 0)
+        <label class="small fw-bold text-muted mb-2">Foto Saat Ini (Centang kotak merah untuk menghapus)</label>
+        <div class="row g-3 mb-4">
+            @foreach($gallery as $img)
+            <div class="col-6 col-md-4 col-lg-3">
                 
-                <p class="small text-muted fw-bold">Foto Saat Ini (Centang untuk menghapus):</p>
-                <div class="d-flex gap-2 flex-wrap mb-4">
-                    @foreach($gallery as $img)
-                    <div class="existing-img-wrapper">
-                        <input type="checkbox" name="delete_gallery_ids[]" value="{{ $img->id }}" class="del-check" title="Hapus">
-                        <img src="{{ asset('storage/'.$img->image_path) }}">
-                        <div class="delete-overlay"><i class="fas fa-trash"></i></div>
-                    </div>
-                    @endforeach
-                </div>
-
-                <div class="p-3 bg-light rounded border">
-                    <label class="small fw-bold text-primary mb-2">Upload Foto Baru:</label>
+                <div style="position: relative; width: 100%; height: 130px; border: 2px solid #eee; border-radius: 10px; background-color: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     
-                    <div id="gallery-container">
-                        <div class="d-flex align-items-center gap-2 mb-2 position-relative">
-                            <input type="file" name="foto_barang_baru[]" class="form-control" accept="image/*" onchange="previewImage(this)">
-                            <div style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden; display:none;"><img src="" style="width:100%; height:100%; object-fit:cover;"></div>
-                        </div>
+                    <img src="{{ asset('storage/' . $img->image_path) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;">
+                    
+                    <div style="position: absolute; top: 5px; left: 5px; background: white; padding: 3px 6px; border-radius: 5px; border: 1px solid #ddd;">
+                        <input class="form-check-input border-danger m-0" type="checkbox" name="delete_gallery_ids[]" value="{{ $img->id }}" style="cursor: pointer; width: 16px; height: 16px;">
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2" onclick="addGalleryInput()">
-                        <i class="fas fa-plus me-1"></i> Tambah Foto Lain
-                    </button>
+                </div>
+
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+
+        
+        <label class="small fw-bold text-muted mt-2 mb-2 border-top pt-3 d-block">Tambah Foto Baru</label>
+        
+        <div id="gallery-container">
+            <div class="d-flex align-items-center gap-2 mb-2 row-container">
+                <input type="file" name="foto_barang_baru[]" class="form-control" accept="image/*" onchange="previewImage(this)">
+                <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none; flex-shrink: 0;">
+                    <img src="" style="width:100%; height:100%; object-fit:cover;">
                 </div>
             </div>
+        </div>
+        
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2" onclick="addGalleryInput()">
+            <i class="fas fa-plus"></i> Tambah Foto Lain
+        </button>
+    </div>
 
-            <div class="container" style="max-width: 800px;">
-                <div class="btn-action-group">
-                    <a href="/detail/{{ $product->id }}" class="btn-custom btn-batal">Batal</a>
-                    <button type="submit" class="btn-custom btn-simpan">Simpan Data</button>
-                </div>
-            </div>
+    <div class="d-flex justify-content-end gap-2 mt-4 mb-5">
+        <a href="/detail/{{ $product->id }}" class="btn btn-secondary rounded-pill px-4">Batal</a>
+        <button type="submit" class="btn btn-success rounded-pill px-4">
+            <i class="fas fa-save me-2"></i> Simpan Perubahan
+        </button>
+    </div>
+</form>
 
-        </form>
+
     </div>
 
     <script>
-        // 1. Fungsi Tambah Input Gallery
-        function addGalleryInput() {
-            const div = document.createElement('div');
-            div.className = 'd-flex align-items-center gap-2 mb-2 position-relative';
-            div.innerHTML = `
-                <input type="file" name="foto_barang_baru[]" class="form-control" accept="image/*" onchange="previewImage(this)">
-                <div style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden; display:none;"><img src="" style="width:100%; height:100%; object-fit:cover;"></div>
-                <button type="button" class="btn btn-danger btn-sm rounded-circle" style="width:30px; height:30px; padding:0;" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
-            `;
-            document.getElementById('gallery-container').appendChild(div);
-        }
-
-        // 2. Preview
-        function previewImage(input) {
-            const file = input.files[0];
-            const previewBox = input.nextElementSibling;
-            if(previewBox && file) {
-                const img = previewBox.querySelector('img');
-                const reader = new FileReader();
-                reader.onload = function(e){ img.src = e.target.result; previewBox.style.display = 'block'; }
-                reader.readAsDataURL(file);
+        // Preview Gambar
+      function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var container = input.closest('.row-container');
+                var img = container.querySelector('img');
+                var box = container.querySelector('.preview-box');
+                if(img && box) {
+                    img.src = e.target.result;
+                    box.style.display = 'block';
+                }
             }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+
+        //Fungsi Tambah Baris Gallery Baru (Seperti di input.blade.php)
+    function addGalleryInput() {
+        const div = document.createElement('div');
+        div.className = 'd-flex align-items-center gap-2 mb-2 row-container';
+        div.innerHTML = `
+            <input type="file" name="foto_barang_baru[]" class="form-control" accept="image/*" onchange="previewImage(this)">
+            <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none; flex-shrink: 0;">
+                <img src="" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle px-2" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        document.getElementById('gallery-container').appendChild(div);
+    }
+    
+
+        // Tambah Baris Dimensi
+        function addDimensiRow() {
+            let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
+            let newRow = tbody.insertRow();
+            newRow.innerHTML = `
+                <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
+                <td><input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0"></td>
+                <td><input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0"></td>
+                <td><input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
+                <td><input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
+                <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+            `;
         }
 
-        function addDimensiRow() {
-                    let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
-                    let newRow = tbody.insertRow();
-                    
-                    newRow.innerHTML = `
-                        <td class="p-2"><input type="number" name="dim_panjang[]" class="form-control" placeholder="0"></td>
-                        <td class="p-2"><input type="number" name="dim_lebar[]" class="form-control" placeholder="0"></td>
-                        <td class="p-2"><input type="number" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
-                        <td class="p-2"><input type="number" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
-                        <td class="text-center p-2">
-                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2" onclick="removeRow(this)">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    `;
-                }
+        // Hapus Baris Dimensi
+        function removeRow(btn) {
+            let row = btn.closest('tr');
+            if (row.parentElement.rows.length > 1) row.remove();
+        }
 
-                function removeRow(btn) {
-                    let row = btn.parentNode.parentNode;
-                    let tbody = row.parentNode;
-                    if (tbody.rows.length > 1) {
-                        tbody.removeChild(row);
-                    } else {
-                        // Jika tinggal 1 baris, kosongkan saja nilainya jangan dihapus barisnya
-                        let inputs = row.getElementsByTagName('input');
-                        for(let i=0; i<inputs.length; i++) inputs[i].value = '';
-                    }
-                }
+        // Format Rupiah
+        function formatRupiah(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if (!value) {
+                input.value = '';
+                document.getElementById('price_actual').value = '';
+                return;
+            }
+            document.getElementById('price_actual').value = value;
+            input.value = parseInt(value).toLocaleString('id-ID');
+        }
     </script>
 </body>
 </html>

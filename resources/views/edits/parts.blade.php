@@ -61,7 +61,7 @@
         .btn-action-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
         .btn-custom { border: none; border-radius: 50px; padding: 12px 30px; font-weight: 600; font-size: 14px; }
         .btn-batal { background-color: #dc1f26; color: white; text-decoration: none; display: inline-flex; align-items: center; }
-        .btn-simpan { background-color: #1a459c; color: white; }
+        .btn-simpan { background-color: #1a9c32; color: white; }
     </style>
 </head>
 <body>

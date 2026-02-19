@@ -44,6 +44,11 @@ Route::put('/update/{id}', [ProductController::class, 'updateData']);
 Route::get('/delete-product/{id}', [ProductController::class, 'destroyProduct']);
 
 
+// --- MANAJEMEN CUSTOMER (MASTER DATA) ---
+Route::get('/customers', [App\Http\Controllers\ProductController::class, 'customerManager']);
+Route::post('/customers/store', [App\Http\Controllers\ProductController::class, 'storeCustomer']);
+Route::get('/customers/delete/{id}', [App\Http\Controllers\ProductController::class, 'deleteCustomer']);
+
 
 // --- ROUTE PERBAIKAN DATA OTOMATIS ---
 Route::get('/fix-images', function () {

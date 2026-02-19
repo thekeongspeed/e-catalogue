@@ -162,18 +162,24 @@
                 </div>
 
                 <div class="row g-4">
-                    <div class="col-md-6">
-                        <label class="form-label-custom">Nama Customer</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-building"></i></span>
-                            <input class="form-control" list="customerOptions" name="nama_customer" placeholder="Pilih atau Ketik Baru..." required autocomplete="off">
+                   <div class="col-md-6">
+                            <label class="form-label-custom">Nama Customer</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                <input class="form-control" list="customerOptions" name="nama_customer" placeholder="Pilih..." required autocomplete="off">
+                                
+                                <a href="/customers" class="btn btn-outline-secondary" title="Kelola Customer" target="_blank">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                            
+                            <datalist id="customerOptions">
+                                @foreach($customerList as $cust)
+                                    <option value="{{ $cust->name }}">
+                                @endforeach
+                            </datalist>
                         </div>
-                        <datalist id="customerOptions">
-                            @foreach($customerList as $cust)
-                                <option value="{{ $cust }}">
-                            @endforeach
-                        </datalist>
-                    </div>
+                        
 
                     <div class="col-md-6">
                         <label class="form-label-custom">Nama Barang</label>
@@ -215,18 +221,20 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
+                   <div class="col-md-6">
                         <label class="form-label-custom">Estimasi Harga (Price)</label>
                         <div class="input-group">
                             <span class="input-group-text fw-bold">Rp</span>
-                            <input type="number" name="price" class="form-control" placeholder="0">
-                            <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
+                            
+                            <input type="text" id="price_display" class="form-control" placeholder="0" onkeyup="formatRupiah(this)">
+                            
+                            <input type="hidden" name="price" id="price_actual">
                         </div>
-                        <div class="form-text small text-muted">* Masukkan angka saja tanpa titik (Contoh: 150000)</div>
+                      
                     </div>
                 </div>
             </div>
-            
+
 
             <div class="section-card">
                 <div class="section-label"><i class="fas fa-ruler-combined me-2"></i> Dimensi Produk</div>
@@ -411,6 +419,29 @@
             document.getElementById('project-container').appendChild(div);
         }
     
+
+        // --- FUNGSI FORMAT RUPIAH (TITIK OTOMATIS) ---
+        function formatRupiah(input) {
+            // 1. Ambil value yang diketik, hapus semua karakter selain angka
+            // Contoh: User ngetik "1.000.a" -> jadi "1000"
+            let value = input.value.replace(/[^0-9]/g, '');
+
+            // 2. Cek jika kosong
+            if (!value) {
+                input.value = '';
+                document.getElementById('price_actual').value = '';
+                return;
+            }
+
+            // 3. Simpan nilai MURNI (angka saja) ke input hidden
+            // Ini yang akan dibaca oleh Controller Laravel
+            document.getElementById('price_actual').value = value;
+
+            // 4. Format tampilan agar ada titik ribuan
+            // Fungsi toLocaleString('id-ID') otomatis ngasih titik ala Indonesia
+            input.value = parseInt(value).toLocaleString('id-ID');
+        }
+
     </script>
 </body>
 </html>

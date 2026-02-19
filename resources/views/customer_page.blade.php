@@ -180,7 +180,12 @@
     </div>
 
     <div class="store-header">
-        <img src="{{ asset('logos/' . $name . '.png') }}" class="store-logo" alt="Logo" onerror="this.style.display='none'">
+       @if(isset($logoUrl) && $logoUrl)
+            <img src="{{ $logoUrl }}" class="store-logo" alt="Logo">
+        @else
+            <img src="{{ asset('logos/' . $name . '.png') }}" class="store-logo" alt="Logo" onerror="this.style.display='none'">
+        @endif
+        
         <div class="store-name">{{ $name }}</div>
         
         <div class="mt-3">

@@ -225,27 +225,51 @@
                 </div>
                 
                 <table class="spec-table">
-                    <tr><td colspan="2" class="spec-header">General Information</td></tr>
-                    <tr><td class="spec-label">Nama Produk</td><td class="spec-value">{{ $product->nama_barang }}</td></tr>
-                    <tr><td class="spec-label">Customer</td><td class="spec-value">{{ $product->nama_customer }}</td></tr>
+             <tr>
+                        <td class="spec-label">Customer</td>
+                        <td class="spec-value">{{ $product->nama_customer }}</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-label">Base Material</td>
+                        <td class="spec-value">{{ $product->jenis_material ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-label">Finishing / Color</td>
+                        <td class="spec-value">{{ $product->finishing ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-label">Type / Series</td>
+                        <td class="spec-value">{{ $product->tipe ?? '-' }}</td>
+                    </tr>
                     
-                    <tr><td class="spec-label">Base Material</td><td class="spec-value">{{ $product->jenis_material ?? '-' }}</td></tr>
-                    <tr><td class="spec-label">Finishing / Color</td><td class="spec-value">{{ $product->finishing ?? '-' }}</td></tr>
-                    <tr><td class="spec-label">Type / Series</td><td class="spec-value">{{ $product->tipe ?? '-' }}</td></tr>
+                    <tr>
+                        <td class="spec-label">Color Available</td>
+                        <td class="spec-value">{{ $product->color_available ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-label">Price Estimate</td>
+                        <td class="spec-value fw-bold text-success">
+                            @if($product->price)
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
 
                     <tr><td colspan="2" class="spec-header">Product Dimension (Available Sizes)</td></tr>
                     
                     @if($dimensions->isEmpty())
-                        <tr>
-                            <td colspan="2" class="text-center text-muted fst-italic py-2">
-                                - Belum ada data dimensi -
-                            </td>
-                        </tr>
+                        <tr><td colspan="2" class="text-center text-muted fst-italic py-2">- Belum ada data dimensi -</td></tr>
                     @else
                         @foreach($dimensions as $index => $dim)
                         <tr>
                             <td class="spec-label" style="vertical-align: top;">
-                                Opsi Ukuran #{{ $index + 1 }}
+                                @if($dim->item_code)
+                                    <span class="badge bg-primary">{{ $dim->item_code }}</span>
+                                @else
+                                    Size #{{ $index + 1 }}
+                                @endif
                             </td>
                             <td class="spec-value">
                                 <span class="badge bg-light text-dark border me-1">P: {{ floatval($dim->panjang) }}</span>

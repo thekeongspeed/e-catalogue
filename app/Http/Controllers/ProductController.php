@@ -143,6 +143,8 @@ class ProductController extends Controller
 
 public function customerPage(Request $request, $name) {
         // 1. Siapkan Query Dasar
+        $customerData = DB::table('customers')->where('name', $name)->first();
+        $logoUrl = $customerData && $customerData->logo_path ? asset('storage/' . $customerData->logo_path) : null;
         $query = DB::table('products')->where('nama_customer', $name);
 
         // 2. Filter Search (Jika Ada)
@@ -159,7 +161,7 @@ public function customerPage(Request $request, $name) {
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('customer_page', compact('products', 'name'));
+        return view('customer_page', compact('products', 'name', 'logoUrl'));
     }
 
 
@@ -240,8 +242,9 @@ public function customerPage(Request $request, $name) {
         $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
 
         // Load View PDF Satuan (print_product.blade.php)
-        $pdf = \PDF::loadView('print_product', compact('product', 'gallery', 'items', 'projects', 'dimensions'));
+        $pdf = \PDF::loadView('print_product', compact('product', 'gallery', 'dimensions', 'items', 'projects'));
         $pdf->setPaper('A4', 'portrait');
+        
         
         return $pdf->stream('Produk-' . $product->nama_barang . '.pdf');
     }
@@ -271,7 +274,9 @@ public function customerPage(Request $request, $name) {
         }
 
         $pdf = \PDF::loadView('print_catalog', compact('data', 'name'));
+        $pdf->setOption(['isRemoteEnabled' => true]);
         $pdf->setPaper('A4', 'portrait');
+        
         
         return $pdf->stream('Katalog-Lengkap-' . $name . '.pdf');
     }
@@ -289,21 +294,61 @@ public function customerPage(Request $request, $name) {
         return view('customer_page', compact('products', 'name'));
     }
 
-   public function manageData() {
+
+
+    // 1. Halaman Kelola Customer
+    public function customerManager() {
+        if (!session('is_admin')) return redirect('/login');
+        
+        $customers = DB::table('customers')->orderBy('name', 'asc')->get();
+        return view('customers.index', compact('customers'));
+    }
+
+    // 2. Simpan Customer Baru
+    public function storeCustomer(Request $request) {
         if (!session('is_admin')) return redirect('/login');
 
-        // Ambil daftar customer unik untuk Dropdown
-        $customerList = DB::table('products')
-                        ->select('nama_customer')
-                        ->distinct()
-                        ->pluck('nama_customer'); // Mengambil array nama saja
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('logos', 'public');
+        }
 
-        // Ambil data produk untuk tabel list di bawah form (jika ada)
+        DB::table('customers')->insert([
+            'name' => $request->name,
+            'logo_path' => $logoPath,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect('/customers')->with('success', 'Customer berhasil ditambahkan!');
+    }
+
+    // 3. Hapus Customer
+    public function deleteCustomer($id) {
+        if (!session('is_admin')) return redirect('/login');
+
+        $cust = DB::table('customers')->where('id', $id)->first();
+        if ($cust && $cust->logo_path) {
+            Storage::disk('public')->delete($cust->logo_path);
+        }
+        
+        DB::table('customers')->where('id', $id)->delete();
+        return back()->with('success', 'Customer dihapus.');
+    }
+
+public function manageData() {
+        if (!session('is_admin')) return redirect('/login');
+
+        // UPDATE: Ambil data dari tabel 'customers' yang baru
+        // Kita ambil semua kolom karena nanti butuh ID atau logonya
+        $customerList = DB::table('customers')->orderBy('name', 'asc')->get();
+
         $products = DB::table('products')->orderBy('id', 'desc')->get();
         
-        // Kirim variabel $customerList ke view
         return view('input', compact('products', 'customerList')); 
     }
+
+
 
 // --- HALAMAN DETAIL PRODUK (SINGLE PAGE) ---
    public function detailProduct($id) {
@@ -494,7 +539,8 @@ public function customerPage(Request $request, $name) {
             'jenis_material'=> $request->jenis_material,
             'finishing'     => $request->finishing,
             'tipe'          => $request->tipe,
-            // 'panjang', 'lebar' JANGAN diupdate ke tabel products lagi
+            'color_available' => $request->color_available,
+            'price'           => $request->price,
             'updated_at'    => now(),
         ]);
 
@@ -528,6 +574,7 @@ public function customerPage(Request $request, $name) {
             $lebar   = $request->dim_lebar;
             $tinggi  = $request->dim_tinggi;
             $kedalam = $request->dim_kedalaman;
+            $codes   = $request->dim_item_code;
 
             for ($i = 0; $i < count($panjang); $i++) {
                 if (!empty($panjang[$i]) || !empty($lebar[$i])) {
@@ -537,6 +584,7 @@ public function customerPage(Request $request, $name) {
                         'lebar'      => $lebar[$i],
                         'tinggi'     => $tinggi[$i],
                         'kedalaman'  => $kedalam[$i],
+                        'item_code'  => $codes[$i],
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);

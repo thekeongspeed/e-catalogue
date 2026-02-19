@@ -1,0 +1,11 @@
+{
+    "poppins": {
+        "normal": "C:\\laragon\\www\\Katalog_library\\katalog-library\\storage\\fonts\/poppins_normal_721013c4c087fdb9f7f0cac5dccf5db4",
+        "800": "C:\\laragon\\www\\Katalog_library\\katalog-library\\storage\\fonts\/poppins_800_d35239960f853f3d653c360b50e539da",
+        "bold": "poppins_bold_d35239960f853f3d653c360b50e539da"
+    },
+    "montserrat": {
+        "normal": "C:\\laragon\\www\\Katalog_library\\katalog-library\\storage\\fonts\/montserrat_normal_8dfcd4416909488ff8e7efd1bf2327d0",
+        "bold": "montserrat_bold_1f4275e175b0bd35e6e6518f69be21fd"
+    }
+}
