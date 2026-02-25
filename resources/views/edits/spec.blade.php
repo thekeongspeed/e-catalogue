@@ -47,6 +47,21 @@
         .btn-custom { border: none; border-radius: 50px; padding: 12px 30px; font-weight: 600; font-size: 14px; }
         .btn-batal { background-color: #dc1f26; color: white; text-decoration: none; display: inline-flex; align-items: center; }
         .btn-simpan { background-color: #1a459c; color: white; }
+
+        /* --- STYLE INPUT GROUP (KIRI & KANAN) --- */
+        .input-group-text { background-color: #f8f9fa; border: 1px solid #dee2e6; color: #1a459c; }
+        
+        /* Ikon di Kiri (Contoh: Rp) */
+        .input-group .input-group-text:first-child { border-right: none; }
+        .input-group .input-group-text:first-child + .form-control { border-left: none; }
+
+        /* Ikon di Kanan (Contoh: mm) */
+        .input-group .form-control:not(:last-child) { border-right: none; }
+        .input-group .form-control:not(:last-child) + .input-group-text { border-left: none; font-size: 12px; font-weight: bold; }
+
+        /* Efek Focus */
+        .input-group:focus-within .input-group-text, .input-group:focus-within .form-control { border-color: #1a459c; background-color: #eef2ff; }
+        .input-group:focus-within .form-control { box-shadow: none; background-color: #fff; }
     </style>
 </head>
 <body>
@@ -95,29 +110,73 @@
                             <th>Panjang</th> <th>Lebar</th> <th>Tinggi</th> <th>Kedalaman</th> <th>Hapus</th>
                         </tr>
                     </thead>
-                    <tbody>
+
+
+                  <tbody>
                         @if(isset($dimensions) && count($dimensions) > 0)
                             @foreach($dimensions as $dim)
                             <tr>
                                 <td><input type="text" name="dim_item_code[]" class="form-control" value="{{ $dim->item_code ?? '' }}" placeholder="Code"></td>
-                                <td><input type="number" step="0.01" name="dim_panjang[]" class="form-control" value="{{ $dim->panjang ?? '' }}"></td>
-                                <td><input type="number" step="0.01" name="dim_lebar[]" class="form-control" value="{{ $dim->lebar ?? '' }}"></td>
-                                <td><input type="number" step="0.01" name="dim_tinggi[]" class="form-control" value="{{ $dim->tinggi ?? '' }}"></td>
-                                <td><input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" value="{{ $dim->kedalaman ?? '' }}"></td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_panjang[]" class="form-control" value="{{ $dim->panjang ?? '' }}">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_lebar[]" class="form-control" value="{{ $dim->lebar ?? '' }}">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_tinggi[]" class="form-control" value="{{ $dim->tinggi ?? '' }}">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" value="{{ $dim->kedalaman ?? '' }}">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
                                 <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                             </tr>
                             @endforeach
                         @else
                             <tr>
                                 <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                                <td><input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0"></td>
-                                <td><input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0"></td>
-                                <td><input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
-                                <td><input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0">
+                                        <span class="input-group-text">mm</span>
+                                    </div>
+                                </td>
                                 <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                             </tr>
                         @endif
                     </tbody>
+
+
                 </table>
                 <button type="button" class="btn btn-success btn-sm mt-2" onclick="addDimensiRow()"><i class="fas fa-plus me-1"></i> Tambah Variasi Ukuran</button>
             </div>
@@ -175,7 +234,44 @@
 
     </div>
 
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
+
+      // 1. Jika Berhasil (Success)
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true, /* Notif melayang di pojok */
+                position: 'top-end',
+                background: '#ffffff',
+                color: '#1a459c'
+            });
+        @endif
+
+        // 2. Jika Gagal/Ada Input yang Salah (Error)
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops! Ada yang salah',
+                html: `
+                    <ul style="text-align: left; margin-bottom: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonColor: '#dc1f26'
+            });
+        @endif
+
+
         // Preview Gambar
       function previewImage(input) {
         if (input.files && input.files[0]) {
@@ -212,18 +308,40 @@
     
 
         // Tambah Baris Dimensi
+      // Tambah Baris Dimensi
         function addDimensiRow() {
             let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
             let newRow = tbody.insertRow();
             newRow.innerHTML = `
                 <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                <td><input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0"></td>
-                <td><input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0"></td>
-                <td><input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0"></td>
-                <td><input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0"></td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
                 <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
             `;
         }
+        
 
         // Hapus Baris Dimensi
         function removeRow(btn) {

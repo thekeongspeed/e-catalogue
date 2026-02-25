@@ -42,21 +42,42 @@ class ProductController extends Controller
 
     // --- PROSES INPUT (HANYA ADMIN) ---
  public function store(Request $request) {
+
+ $request->validate([
+            'nama_customer'   => 'required|string',
+            'nama_barang'     => 'required|string',
+            
+            // SISANYA JADIKAN NULLABLE AGAR BOLEH KOSONG
+            'tipe'            => 'nullable|string',
+            'jenis_material'  => 'nullable|string',
+            'finishing'       => 'nullable|string',
+            'color_available' => 'nullable|string',
+            'price'           => 'nullable|numeric',
+            
+            // Jika ada validasi untuk array (dimensi, part, gallery), jadikan nullable juga
+            'dim_panjang'     => 'nullable|array',
+            'foto_barang'     => 'nullable|array',
+        ]);
+
+
         // 1. Simpan Data Produk (Update: Tambah Color & Price)
         $productId = DB::table('products')->insertGetId([
             'nama_customer' => $request->nama_customer,
             'nama_barang'   => $request->nama_barang,
-            'jenis_material'=> $request->jenis_material,
-            'finishing'     => $request->finishing,
-            'tipe'          => $request->tipe,
             
-            // KOLOM BARU
-            'color_available' => $request->color_available,
-            'price'           => $request->price,
+            // TAMBAHKAN ?? '-' DI SINI AGAR DATABASE TIDAK ERROR
+            'jenis_material'=> $request->jenis_material ?? '-',
+            'finishing'     => $request->finishing ?? '-',
+            'tipe'          => $request->tipe ?? '-',
+            'color_available' => $request->color_available ?? '-',
+            
+            // Khusus harga (price), jika kosong jadikan angka 0
+            'price'           => $request->price ?? 0,
             
             'created_at'    => now(),
             'updated_at'    => now(),
         ]);
+
 
         // 2. Simpan Foto (Logic Hybrid tetap dipakai)
         if ($request->hasFile('foto_barang')) {
@@ -71,26 +92,25 @@ class ProductController extends Controller
             }
         }
 
-        // 3. Simpan Dimensi (Update: Tambah Item Code)
-        if ($request->has('dim_panjang')) {
+        // 3. Simpan Dimensi (Penyempurnaan Pengecekan)
+        // Pengecekan pakai dim_item_code & is_array agar tidak error PHP count()
+        if ($request->has('dim_item_code') && is_array($request->dim_item_code)) {
+            $codes   = $request->dim_item_code; 
             $panjang = $request->dim_panjang;
             $lebar   = $request->dim_lebar;
             $tinggi  = $request->dim_tinggi;
             $kedalam = $request->dim_kedalaman;
             
-            // AMBIL ITEM CODE
-            $codes   = $request->dim_item_code; 
-
-            for ($i = 0; $i < count($panjang); $i++) {
-                // Simpan jika salah satu data dimensi terisi
-                if (!empty($panjang[$i]) || !empty($lebar[$i]) || !empty($tinggi[$i])) {
+            for ($i = 0; $i < count($codes); $i++) {
+                // PENYEMPURNAAN: Simpan jika Item Code ATAU Dimensi terisi
+                if (!empty($codes[$i]) || !empty($panjang[$i]) || !empty($lebar[$i]) || !empty($tinggi[$i])) {
                     DB::table('product_dimensions')->insert([
                         'product_id' => $productId,
-                        'item_code'  => $codes[$i] ?? null, // Simpan Item Code
-                        'panjang'    => $panjang[$i],
-                        'lebar'      => $lebar[$i],
-                        'tinggi'     => $tinggi[$i],
-                        'kedalaman'  => $kedalam[$i],
+                        'item_code'  => $codes[$i] ?? null,
+                        'panjang'    => $panjang[$i] ?? null,
+                        'lebar'      => $lebar[$i] ?? null,
+                        'tinggi'     => $tinggi[$i] ?? null,
+                        'kedalaman'  => $kedalam[$i] ?? null,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
@@ -101,17 +121,14 @@ class ProductController extends Controller
         // 4. Simpan Parts (Update: Nama Jadi Optional)
         if ($request->items) {
             foreach ($request->items as $itemData) {
-                // Hapus pengecekan 'empty name continue', biar bisa simpan walau nama kosong
-                // Asalkan ada gambar atau tipe, kita simpan.
-                
                 // Cek minimal salah satu field terisi agar tidak nyampah record kosong
-                if (empty($itemData['name']) && !isset($itemData['image']) && empty($itemData['tipe'])) {
+                if (empty($itemData['name']) && !isset($itemData['image']) && empty($itemData['tipe']) && empty($itemData['dimensi'])) {
                     continue; 
                 }
 
                 $dataPart = [
                     'product_id' => $productId,
-                    'nama_item' => $itemData['name'] ?? null, // Boleh null
+                    'nama_item' => $itemData['name'] ?? null, 
                     'tipe' => $itemData['tipe'] ?? null,
                     'dimensi_part' => $itemData['dimensi'] ?? null,
                     'konfigurasi' => $itemData['konfigurasi'] ?? null,
@@ -137,7 +154,7 @@ class ProductController extends Controller
             }
         }
 
-        return redirect('/')->with('success', 'Data Katalog berhasil disimpan!');
+        return redirect()->back()->with('success', 'Data Katalog berhasil disimpan!');
     }
 
 
@@ -236,14 +253,16 @@ public function customerPage(Request $request, $name) {
         }
 
         // Ambil Data Relasi
+        $customer = DB::table('customers')->where('name', $product->nama_customer)->first();
         $gallery = DB::table('product_images')->where('product_id', $product->id)->get();
         $items = DB::table('product_items')->where('product_id', $product->id)->get();
         $projects = DB::table('project_references')->where('product_id', $product->id)->get();
         $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
 
         // Load View PDF Satuan (print_product.blade.php)
-        $pdf = \PDF::loadView('print_product', compact('product', 'gallery', 'dimensions', 'items', 'projects'));
+        $pdf = \PDF::loadView('print_product', compact('product', 'gallery', 'dimensions', 'items', 'projects', 'customer'));
         $pdf->setPaper('A4', 'portrait');
+        $pdf ->setOption(['isPhpEnabled' => true]);
         
         
         return $pdf->stream('Produk-' . $product->nama_barang . '.pdf');
@@ -254,6 +273,7 @@ public function customerPage(Request $request, $name) {
         $name = $request->query('name');
         
         $products = DB::table('products')->where('nama_customer', $name)->get();
+        $customer = DB::table('customers')->where('name', $name)->first();
 
         if ($products->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada produk untuk customer ini.');
@@ -273,8 +293,8 @@ public function customerPage(Request $request, $name) {
             ];
         }
 
-        $pdf = \PDF::loadView('print_catalog', compact('data', 'name'));
-        $pdf->setOption(['isRemoteEnabled' => true]);
+        $pdf = \PDF::loadView('print_catalog', compact('data', 'name', 'customer'));
+        $pdf->setOption(['isRemoteEnabled' => true,'isPhpEnabled' => true]);
         $pdf->setPaper('A4', 'portrait');
         
         
@@ -516,7 +536,7 @@ public function manageData() {
         
 
         // Redirect kembali ke halaman detail produk
-        return redirect('/detail/' . $id)->with('success', 'Data produk berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Data berhasil diubah!');
     }
 
 
@@ -592,7 +612,7 @@ public function manageData() {
             }
         }
 
-        return redirect('/detail/' . $id . '#spec')->with('success', 'Spesifikasi & Dimensi berhasil diupdate!');
+        return redirect()->back()->with('success', 'Spesifikasi & Dimensi berhasil diupdate!');
     }
 
     // ==========================================
@@ -605,10 +625,10 @@ public function manageData() {
         return view('edits.parts', compact('product', 'items'));
     }
 
-    public function updateParts(Request $request, $id) {
+ public function updateParts(Request $request, $id) 
+    {
         // 1. Hapus Part yang dicentang
         if ($request->has('delete_part_ids')) {
-            // Opsional: Hapus file gambarnya juga
             $partsToDelete = DB::table('product_items')->whereIn('id', $request->delete_part_ids)->get();
             foreach($partsToDelete as $p) {
                 if($p->foto_item) Storage::disk('public')->delete($p->foto_item);
@@ -616,12 +636,17 @@ public function manageData() {
             DB::table('product_items')->whereIn('id', $request->delete_part_ids)->delete();
         }
 
-        // 2. Update/Insert Part
+        // 2. Update Part Lama
         if ($request->has('items')) {
-            // PENTING: Gunakan $key untuk akses File
             foreach ($request->items as $key => $itemData) {
                 
                 if (empty($itemData['name'])) continue;
+
+                $dimensi = !empty($itemData['dimensi']) ? trim($itemData['dimensi']) : null;
+                if ($dimensi && stripos($dimensi, 'mm') === false) $dimensi .= ' mm';
+
+                $load = !empty($itemData['load']) ? trim($itemData['load']) : null;
+                if ($load && stripos($load, 'kg') === false) $load .= ' kg';
 
                 $dataToSave = [
                     'nama_item'     => $itemData['name'],
@@ -632,8 +657,7 @@ public function manageData() {
                     'updated_at'    => now(),
                 ];
 
-                // PERBAIKAN UPLOAD GAMBAR DISINI
-                // Cek apakah ada file di index array yang sesuai ($key)
+                // Cek upload file item lama
                 if ($request->hasFile("items.$key.image")) {
                     $path = $request->file("items.$key.image")->store('uploads', 'public');
                     $dataToSave['foto_item'] = $path;
@@ -642,17 +666,47 @@ public function manageData() {
                 if (isset($itemData['id'])) {
                     // Update Item Lama
                     DB::table('product_items')->where('id', $itemData['id'])->update($dataToSave);
-                } else {
-                    // Insert Item Baru
-                    $dataToSave['product_id'] = $id;
-                    $dataToSave['created_at'] = now();
-                    DB::table('product_items')->insert($dataToSave);
-                }
+                } 
             }
-        }
-        return redirect('/detail/' . $id . '#parts')->with('success', 'Parts berhasil diupdate!');
+        } // <--- BLOK ITEM LAMA DITUTUP DI SINI
+
+        // 3. FITUR TAMBAH PART BARU (Dari input Javascript)
+        if ($request->has('new_items')) {
+            // Gunakan $newKey agar bisa membaca file fotonya dengan aman
+            foreach ($request->new_items as $newKey => $newItem) {
+                
+                if (empty($newItem['name'])) continue;
+
+                $dimensiBaru = !empty($newItem['dimensi']) ? trim($newItem['dimensi']) : null;
+                if ($dimensiBaru && stripos($dimensiBaru, 'mm') === false) $dimensiBaru .= ' mm';
+
+                $loadBaru = !empty($newItem['load']) ? trim($newItem['load']) : null;
+                if ($loadBaru && stripos($loadBaru, 'kg') === false) $loadBaru .= ' kg';
+                
+                $dataInsert = [
+                    'product_id'    => $id,
+                    'nama_item'     => $newItem['name'],
+                    'tipe'          => $newItem['tipe'] ?? null,
+                    'dimensi_part'  => $newItem['dimensi'] ?? null,
+                    'konfigurasi'   => $newItem['konfigurasi'] ?? null,
+                    'load_capacity' => $newItem['load'] ?? null,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ];
+
+                // Cek upload file item baru dengan format yang sama
+                if ($request->hasFile("new_items.$newKey.image")) {
+                    $dataInsert['foto_item'] = $request->file("new_items.$newKey.image")->store('uploads', 'public');
+                }
+
+                // Eksekusi Insert ke Database
+                DB::table('product_items')->insert($dataInsert);
+            }
+        } // <--- BLOK ITEM BARU DITUTUP DI SINI
+
+        // 4. Perintah Redirect (Berada di luar semua blok IF)
+        return redirect()->back()->with('success', 'Komponen Parts berhasil diperbarui!');
     }
-    
 
     // ==========================================
     // 3. FITUR EDIT PROJECT REFERENCE
@@ -704,6 +758,6 @@ public function manageData() {
             }
         }
 
-        return redirect('/detail/' . $id . '#project')->with('success', 'Project Reference berhasil diupdate!');
+        return redirect()->back()->with('success', 'Project Reference berhasil diupdate!');
     }
 }

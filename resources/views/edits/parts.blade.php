@@ -62,6 +62,14 @@
         .btn-custom { border: none; border-radius: 50px; padding: 12px 30px; font-weight: 600; font-size: 14px; }
         .btn-batal { background-color: #dc1f26; color: white; text-decoration: none; display: inline-flex; align-items: center; }
         .btn-simpan { background-color: #1a9c32; color: white; }
+
+        /* --- STYLE INPUT GROUP (KIRI & KANAN) --- */
+        .input-group-text { background-color: #f8f9fa; border: 1px solid #dee2e6; color: #1a459c; }
+        .input-group .form-control:not(:last-child) { border-right: none; }
+        .input-group .form-control:not(:last-child) + .input-group-text { border-left: none; font-size: 12px; font-weight: bold; }
+        .input-group:focus-within .input-group-text, .input-group:focus-within .form-control { border-color: #1a459c; background-color: #eef2ff; }
+        .input-group:focus-within .form-control { box-shadow: none; background-color: #fff; }
+
     </style>
 </head>
 <body>
@@ -102,10 +110,33 @@
                             @endif
                         </div>
                         
-                        <div class="col-6 col-md-3"><label class="form-label">Tipe</label><input type="text" name="items[{{ $index }}][tipe]" class="form-control" value="{{ $item->tipe ?? '' }}"></div>
-                        <div class="col-6 col-md-3"><label class="form-label">Dimensi (mm)</label><input type="text" name="items[{{ $index }}][dimensi]" class="form-control" value="{{ $item->dimensi_part ?? '' }}"></div>
-                        <div class="col-6 col-md-3"><label class="form-label">Konfigurasi</label><input type="text" name="items[{{ $index }}][konfigurasi]" class="form-control" value="{{ $item->konfigurasi ?? '' }}"></div>
-                        <div class="col-6 col-md-3"><label class="form-label">Load Capacity</label><input type="text" name="items[{{ $index }}][load]" class="form-control" value="{{ $item->load_capacity ?? '' }}"></div>
+                       <div class="col-6 col-md-3">
+                            <label class="form-label">Tipe</label>
+                            <input type="text" name="items[{{ $index }}][tipe]" class="form-control" value="{{ $item->tipe ?? '' }}">
+                        </div>
+                        
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">Dimensi</label>
+                            <div class="input-group">
+                                <input type="text" name="items[{{ $index }}][dimensi]" class="form-control" value="{{ $item->dimensi_part ?? '' }}">
+                                <span class="input-group-text">mm</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">Konfigurasi</label>
+                            <input type="text" name="items[{{ $index }}][konfigurasi]" class="form-control" value="{{ $item->konfigurasi ?? '' }}">
+                        </div>
+                        
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">Beban / Load</label>
+                            <div class="input-group">
+                                <input type="text" name="items[{{ $index }}][load]" class="form-control" value="{{ $item->load_capacity ?? '' }}">
+                                <span class="input-group-text">kg</span>
+                            </div>
+                        </div>
+                    
+                    
                     </div>
                 </div>
                 @endforeach
@@ -123,25 +154,98 @@
         </form>
     </div>
 
+
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        let index = {{ count($items) + 100 }};
+
+
+  // 1. Jika Berhasil (Success)
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true, /* Notif melayang di pojok */
+                position: 'top-end',
+                background: '#ffffff',
+                color: '#1a459c'
+            });
+        @endif
+
+        // 2. Jika Gagal/Ada Input yang Salah (Error)
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops! Ada yang salah',
+                html: `
+                    <ul style="text-align: left; margin-bottom: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonColor: '#dc1f26'
+            });
+        @endif
+
+
+      // Deklarasi index awal berdasarkan jumlah part yang sudah ada
+        let partIndex = {{ count($items ?? []) }}; 
+
         function addPart() {
             const div = document.createElement('div');
-            div.className = 'item-part-card new-item';
+            // Menambahkan border hijau untuk membedakan part baru
+            div.className = 'item-part-card mt-3'; 
+            div.style.borderLeft = '4px solid #198754'; 
+
             div.innerHTML = `
-                <button type="button" class="btn-remove-part" onclick="this.parentElement.remove()" title="Batal Tambah"><i class="fas fa-times"></i></button>
-                <div class="fw-bold text-success mb-3 pb-2 border-bottom">Part Baru (New)</div>
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <span class="fw-bold text-success">Part Baru (New)</span>
+                    <button type="button" class="btn-close text-danger" onclick="this.closest('.item-part-card').remove()"></button>
+                </div>
+
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Nama Part *</label><input type="text" name="items[${index}][name]" class="form-control" placeholder="Nama Part" required></div>
-                    <div class="col-md-6"><label class="form-label">Foto Part</label><input type="file" name="items[${index}][image]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label class="form-label">Tipe</label><input type="text" name="items[${index}][tipe]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label class="form-label">Dimensi (mm)</label><input type="text" name="items[${index}][dimensi]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label class="form-label">Konfigurasi</label><input type="text" name="items[${index}][konfigurasi]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label class="form-label">Beban</label><input type="text" name="items[${index}][load]" class="form-control"></div>
-                </div>`;
+                    <div class="col-md-5">
+                        <label class="form-label text-muted small fw-bold">Nama Part *</label>
+                        <input type="text" name="new_items[${partIndex}][name]" class="form-control" placeholder="Nama Part" required>
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label text-muted small fw-bold">Foto Part</label>
+                        <input type="file" name="new_items[${partIndex}][image]" class="form-control">
+                    </div>
+                    
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-muted small fw-bold">Tipe</label>
+                        <input type="text" name="new_items[${partIndex}][tipe]" class="form-control">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-muted small fw-bold">Dimensi</label>
+                        <div class="input-group">
+                            <input type="text" name="new_items[${partIndex}][dimensi]" class="form-control">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-muted small fw-bold">Konfigurasi</label>
+                        <input type="text" name="new_items[${partIndex}][konfigurasi]" class="form-control">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-muted small fw-bold">Beban</label>
+                        <div class="input-group">
+                            <input type="text" name="new_items[${partIndex}][load]" class="form-control">
+                            <span class="input-group-text">kg</span>
+                        </div>
+                    </div>
+                </div>
+            `;
             document.getElementById('items-container').appendChild(div);
-            index++;
+            partIndex++;
         }
+        
     </script>
 </body>
 </html>

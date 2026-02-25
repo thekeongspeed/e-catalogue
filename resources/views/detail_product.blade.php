@@ -212,13 +212,13 @@
                     
                     @if(session('is_admin'))
                         <div>
-                            <a href="{{ url('/edit-spec/' . $product->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3 me-2">
+                            <a href="{{ url('/edit-spec/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3 me-2">
                                 <i class="fas fa-edit me-1"></i> Edit Spec
                             </a>
                             <a href="{{ url('/delete-product/' . $product->id) }}" 
                                class="btn btn-sm btn-danger rounded-pill px-3"
                                onclick="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus produk {{ $product->nama_barang }}? \n\nData tidak bisa dikembalikan.')">
-                                <i class="fas fa-trash-alt me-1"></i> Hapus
+                                <i class="fas fa-trash-alt me-1"></i> Delete Product
                             </a>
                         </div>
                     @endif
@@ -291,7 +291,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold text-primary m-0"><i class="fas fa-cubes me-2"></i> Component Details</h5>
                     @if(session('is_admin'))
-                        <a href="{{ url('/edit-parts/' . $product->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                        <a href="{{ url('/edit-parts/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3">
                             <i class="fas fa-edit me-1"></i> Edit Parts
                         </a>        
                     @endif
@@ -322,7 +322,9 @@
                                 </tr>
                                 <tr>
                                     <td class="part-label">Dimension</td>
-                                    <td class="part-val">{{ $item->dimensi_part ?? '-' }}</td>
+                                    <td class="part-val">
+                                        {{ !empty($item->dimensi_part) ? (stripos($item->dimensi_part, 'mm') === false ? $item->dimensi_part . ' mm' : $item->dimensi_part) : '-' }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="part-label">Configuration</td>
@@ -330,9 +332,12 @@
                                 </tr>
                                 <tr>
                                     <td class="part-label">Load Capacity</td>
-                                    <td class="part-val">{{ $item->load_capacity ?? '-' }}</td>
+                                    <td class="part-val">
+                                        {{ !empty($item->load_capacity) ? (stripos($item->load_capacity, 'kg') === false ? $item->load_capacity . ' kg' : $item->load_capacity) : '-' }}
+                                    </td>
                                 </tr>
                             </table>
+                            
                         </div>
                     </div>
                     @endforeach
@@ -343,7 +348,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold text-primary m-0"><i class="fas fa-images me-2"></i> Project Implementation</h5>
                     @if(session('is_admin'))
-                        <a href="{{ url('/edit-project/' . $product->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                        <a href="{{ url('/edit-project/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3">
                             <i class="fas fa-edit me-1"></i> Edit Project
                         </a>
                     @endif

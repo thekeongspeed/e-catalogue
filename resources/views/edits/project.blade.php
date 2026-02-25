@@ -126,6 +126,8 @@
         </form>
     </div>
 
+         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+         
     <script>
         // Fungsi Tambah Input Project (Dua Kolom: Teks & File)
         function addProjectInput() {
@@ -163,6 +165,45 @@
                 reader.readAsDataURL(file);
             }
         }
+
+
+    
+  // 1. Jika Berhasil (Success)
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true, /* Notif melayang di pojok */
+                position: 'top-end',
+                background: '#ffffff',
+                color: '#1a459c'
+            });
+        @endif
+
+        // 2. Jika Gagal/Ada Input yang Salah (Error)
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops! Ada yang salah',
+                html: `
+                    <ul style="text-align: left; margin-bottom: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonColor: '#dc1f26'
+            });
+        @endif
+        
+
+
     </script>
+
+
 </body>
 </html>

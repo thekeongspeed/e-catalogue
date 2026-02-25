@@ -96,28 +96,34 @@
 .input-group-text {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-right: none;
-    color: #1a459c; /* Warna Biru Brand */
+    color: #1a459c; 
 }
 
 .form-control {
     border: 1px solid #dee2e6;
-    border-left: none; /* Hilangkan border kiri biar nyatu sama ikon */
     padding: 10px 15px;
     font-size: 14px;
     transition: all 0.3s;
 }
 
-/* Efek saat input diklik */
-.input-group:focus-within .input-group-text {
+
+/* Ikon di Kiri (Contoh: Rp, Ikon Box) */
+.input-group .input-group-text:first-child { border-right: none; }
+.input-group .input-group-text:first-child + .form-control { border-left: none; }
+
+/* Ikon di Kanan (Contoh: mm, kg) */
+.input-group .form-control:not(:last-child) { border-right: none; }
+.input-group .form-control:not(:last-child) + .input-group-text { border-left: none; font-size: 12px; font-weight: bold;}
+
+/* Efek saat diklik */
+.input-group:focus-within .input-group-text,
+.input-group:focus-within .form-control {
     border-color: #1a459c;
     background-color: #eef2ff;
 }
+.input-group:focus-within .form-control { box-shadow: none; background-color: #fff; }
 
-.input-group:focus-within .form-control {
-    border-color: #1a459c;
-    box-shadow: 0 0 0 3px rgba(26, 69, 156, 0.1);
-}
+
 
 /* Judul Section yang lebih fresh */
 .section-header-modern {
@@ -162,30 +168,31 @@
                 </div>
 
                 <div class="row g-4">
-                   <div class="col-md-6">
-                            <label class="form-label-custom">Nama Customer</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-building"></i></span>
-                                <input class="form-control" list="customerOptions" name="nama_customer" placeholder="Pilih..." required autocomplete="off">
-                                
-                                <a href="/customers" class="btn btn-outline-secondary" title="Kelola Customer" target="_blank">
-                                    <i class="fas fa-plus"></i>
-                                </a>
-                            </div>
+                  <div class="col-md-6">
+                        <label class="form-label-custom">Nama Customer</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-building"></i></span>
                             
-                            <datalist id="customerOptions">
+                            <select class="form-select" name="nama_customer" required style="cursor: pointer;">
+                                <option value="" disabled selected>Pilih...</option>
+                                
                                 @foreach($customerList as $cust)
-                                    <option value="{{ $cust->name }}">
+                                    <option value="{{ $cust->name }}">{{ $cust->name }}</option>
                                 @endforeach
-                            </datalist>
+                            </select>
+                            
+                            <a href="/customers" class="btn btn-outline-secondary" title="Kelola Customer" target="_blank">
+                                <i class="fas fa-plus"></i>
+                            </a>
                         </div>
+                    </div>
                         
 
                     <div class="col-md-6">
                         <label class="form-label-custom">Nama Barang</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-box"></i></span>
-                            <input type="text" name="nama_barang" class="form-control" placeholder="Contoh: Rak Gondola T30" required>
+                            <input type="text" name="nama_barang" class="form-control" placeholder="Contoh: Gondola L25" required>
                         </div>
                     </div>
 
@@ -193,7 +200,7 @@
                         <label class="form-label-custom">Tipe / Series</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-tag"></i></span>
-                            <input type="text" name="tipe" class="form-control" placeholder="Contoh: UT 5">
+                            <input type="text" name="tipe" class="form-control" placeholder="Contoh: Island/Wall/Accessories">
                         </div>
                     </div>
 
@@ -201,7 +208,7 @@
                         <label class="form-label-custom">Material Utama</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
-                            <input type="text" name="jenis_material" class="form-control" placeholder="Contoh: Steel SS400">
+                            <input type="text" name="jenis_material" class="form-control" placeholder="Contoh: Steel/Plastic">
                         </div>
                     </div>
 
@@ -217,7 +224,7 @@
                         <label class="form-label-custom">Warna Tersedia (Color Available)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-palette"></i></span>
-                            <input type="text" name="color_available" class="form-control" placeholder="Contoh: Red, Blue, Black">
+                            <input type="text" name="color_available" class="form-control" placeholder="Contoh: White Satin/Black Satin">
                         </div>
                     </div>
 
@@ -240,21 +247,45 @@
                 <div class="section-label"><i class="fas fa-ruler-combined me-2"></i> Dimensi Produk</div>
                 <table class="table table-borderless" id="dimensiTable">
                     <thead>
-                        <tr class="border-bottom">
+                        <tr class="border-bottom small">
                             <th style="width: 20%">Item Code</th>
                             <th>Panjang</th> <th>Lebar</th> <th>Tinggi</th> <th>Kedalaman</th> <th>Aksi</th>
                         </tr>
                     </thead>
+
+
                     <tbody>
                         <tr>
                             <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                            <td><input type="number" name="dim_panjang[]" class="form-control" placeholder="P"></td>
-                            <td><input type="number" name="dim_lebar[]" class="form-control" placeholder="L"></td>
-                            <td><input type="number" name="dim_tinggi[]" class="form-control" placeholder="T"></td>
-                            <td><input type="number" name="dim_kedalaman[]" class="form-control" placeholder="D"></td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="number" name="dim_panjang[]" class="form-control" placeholder="P">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="number" name="dim_lebar[]" class="form-control" placeholder="L">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="number" name="dim_tinggi[]" class="form-control" placeholder="T">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="number" name="dim_kedalaman[]" class="form-control" placeholder="D">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </td>
                             <td><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                         </tr>
                     </tbody>
+
+
                 </table>
                 <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="addDimensiRow()"><i class="fas fa-plus"></i> Tambah Ukuran</button>
             </div>
@@ -278,11 +309,11 @@
                     <div class="item-part-card row-container">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="small fw-bold text-primary">Nama Part (Optional)</label>
-                                <input type="text" name="items[0][name]" class="form-control"> 
+                                <label class="small fw-bold ">Nama Part</label>
+                                <input type="text" name="items[0][name]" class="form-control" placeholder="Contoh : Bracket/Upright"> 
                             </div>
                             <div class="col-md-6">
-                                <label class="small fw-bold text-primary">Foto Part</label>
+                                <label class="small fw-bold ">Foto Part</label>
                                 <div class="d-flex gap-2 align-items-center">
                                     <input type="file" name="items[0][image]" class="form-control" onchange="previewImage(this)">
                                     <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none;">
@@ -290,10 +321,35 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-3"><label>Tipe</label><input type="text" name="items[0][tipe]" class="form-control"></div>
-                            <div class="col-6 col-md-3"><label>Dimensi</label><input type="text" name="items[0][dimensi]" class="form-control"></div>
-                            <div class="col-6 col-md-3"><label>Konfigurasi</label><input type="text" name="items[0][konfigurasi]" class="form-control"></div>
-                            <div class="col-6 col-md-3"><label>Load</label><input type="text" name="items[0][load]" class="form-control"></div>
+
+                            
+                           <div class="col-6 col-md-3">
+                                <label class="small fw-bold">Tipe</label>
+                                <input type="text" name="items[0][tipe]" class="form-control">
+                            </div>
+                            
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold">Dimensi</label>
+                                <div class="input-group">
+                                    <input type="text" name="items[0][dimensi]" class="form-control">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold">Konfigurasi</label>
+                                <input type="text" name="items[0][konfigurasi]" class="form-control">
+                            </div>
+                            
+                            <div class="col-6 col-md-3">
+                                <label class="small fw-bold">Load</label>
+                                <div class="input-group">
+                                    <input type="text" name="items[0][load]" class="form-control">
+                                    <span class="input-group-text">kg</span>
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -324,10 +380,13 @@
 
 
 
-
+    
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
     <script>
+
+        
         let itemIndex = 1;
 
         // FUNGSI PREVIEW GAMBAR
@@ -348,15 +407,36 @@
         }
 
         // FUNGSI TAMBAH DIMENSI (UPDATE: ADA ITEM CODE)
+     // FUNGSI TAMBAH DIMENSI
         function addDimensiRow() {
             let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
             let newRow = tbody.insertRow();
             newRow.innerHTML = `
                 <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                <td><input type="number" name="dim_panjang[]" class="form-control" placeholder="P"></td>
-                <td><input type="number" name="dim_lebar[]" class="form-control" placeholder="L"></td>
-                <td><input type="number" name="dim_tinggi[]" class="form-control" placeholder="T"></td>
-                <td><input type="number" name="dim_kedalaman[]" class="form-control" placeholder="D"></td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" name="dim_panjang[]" class="form-control" placeholder="P">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" name="dim_lebar[]" class="form-control" placeholder="L">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" name="dim_tinggi[]" class="form-control" placeholder="T">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" name="dim_kedalaman[]" class="form-control" placeholder="D">
+                        <span class="input-group-text">mm</span>
+                    </div>
+                </td>
                 <td><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
             `;
         }
@@ -395,10 +475,28 @@
                             <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none;"><img src="" style="width:100%; height:100%; object-fit:cover;"></div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3"><label>Tipe</label><input type="text" name="items[${itemIndex}][tipe]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label>Dimensi</label><input type="text" name="items[${itemIndex}][dimensi]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label>Konfigurasi</label><input type="text" name="items[${itemIndex}][konfigurasi]" class="form-control"></div>
-                    <div class="col-6 col-md-3"><label>Load</label><input type="text" name="items[${itemIndex}][load]" class="form-control"></div>
+
+                    <div class="col-6 col-md-3"><label class="small fw-bold text-primary">Tipe</label><input type="text" name="items[${itemIndex}][tipe]" class="form-control"></div>
+                    
+                    <div class="col-6 col-md-3">
+                        <label class="small fw-bold text-primary">Dimensi</label>
+                        <div class="input-group">
+                            <input type="text" name="items[${itemIndex}][dimensi]" class="form-control">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6 col-md-3"><label class="small fw-bold text-primary">Konfigurasi</label><input type="text" name="items[${itemIndex}][konfigurasi]" class="form-control"></div>
+                    
+                    <div class="col-6 col-md-3">
+                        <label class="small fw-bold text-primary">Load</label>
+                        <div class="input-group">
+                            <input type="text" name="items[${itemIndex}][load]" class="form-control">
+                            <span class="input-group-text">kg</span>
+                        </div>
+                    </div>
+
+
                 </div>
             `;
             document.getElementById('items-container').appendChild(div);
@@ -441,7 +539,39 @@
             // Fungsi toLocaleString('id-ID') otomatis ngasih titik ala Indonesia
             input.value = parseInt(value).toLocaleString('id-ID');
         }
+            
+        // 1. Jika Berhasil (Success)
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Mantap!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true, /* Notif melayang di pojok */
+                position: 'top-end',
+                background: '#ffffff',
+                color: '#1a459c'
+            });
+        @endif
 
+        // 2. Jika Gagal/Ada Input yang Salah (Error)
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops! Ada yang salah',
+                html: `
+                    <ul style="text-align: left; margin-bottom: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonColor: '#dc1f26'
+            });
+        @endif
+        
     </script>
 </body>
 </html>

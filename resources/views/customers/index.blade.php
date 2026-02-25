@@ -132,7 +132,7 @@
                             <div class="form-text small text-muted mt-2">* Format: PNG/JPG (Transparan lebih baik)</div>
                         </div>
 
-                        <button type="submit" class="btn btn-success w-100 rounded-pill fw-bold py-2">
+                        <button type="submit" class="btn btn-success w-100 rounded-pill py-2">
                             <i class="fas fa-save me-2"></i> Simpan Customer
                         </button>
                     </form>
