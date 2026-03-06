@@ -448,6 +448,9 @@
                 </table>
             </div>
 
+
+
+@if(count($items) > 0)
           <div class="page-break"></div>
 
             <div class="page-header">
@@ -528,6 +531,8 @@
         <div style="text-align:center; color:#999; padding: 40px 0; font-style: italic;">- No component parts available -</div>
     @endif
 </div>
+
+@endif
 
 
                     @if(count($projects) > 0)

@@ -323,83 +323,15 @@
             </div>
 
             <div class="section-card">
-                <div class="section-label"><i class="fas fa-cubes me-2"></i> Komponen Parts</div>
-                <div id="items-container">
-                    <div class="item-part-card row-container">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="small fw-bold ">Nama Part</label>
-                                <input type="text" name="items[0][name]" class="form-control" placeholder="Contoh : Bracket/Upright"> 
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small fw-bold ">Foto Part</label>
-                                <div class="d-flex gap-2 align-items-center">
-                                    <input type="file" name="items[0][image]" class="form-control" onchange="previewImage(this)">
-                                    <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none;">
-                                        <img src="" style="width:100%; height:100%; object-fit:cover;">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="small fw-bold">Deskripsi</label>
-                                <textarea name="items[0][deskripsi]" class="form-control" rows="2" placeholder="Deskripsi singkat part..."></textarea>
-                            </div>
-
-                            
-                          <div class="col-6 col-md-3">
-                                <label class="small fw-bold">Material</label>
-                                <div class="input-group">
-                                    <select class="form-select" name="items[0][tipe]" style="cursor: pointer;">
-                                        <option value="">Pilih...</option>
-                                        @foreach($partMaterialList as $pm)
-                                            <option value="{{ $pm->name }}">{{ $pm->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <a href="/part-materials" class="btn btn-outline-secondary" target="_blank" title="Kelola Material">
-                                        <i class="fas fa-plus"></i>
-                                    </a>
-                                </div>
-                            </div>
-
-                            
-                            <div class="col-6 col-md-3">
-                                <label class="small fw-bold">Dimensi</label>
-                                <div class="input-group">
-                                    <input type="text" name="items[0][dimensi]" class="form-control">
-                                    <span class="input-group-text">mm</span>
-                                </div>
-                            </div>
-                            
-                            <div class="col-6 col-md-3">
-                                <label class="small fw-bold">Konfigurasi</label>
-                                <div class="input-group">
-                                    <select class="form-select" name="items[0][konfigurasi]" style="cursor: pointer;">
-                                        <option value="">Pilih...</option>
-                                        @foreach($configurationList as $conf)
-                                            <option value="{{ $conf->name }}">{{ $conf->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <a href="/configurations" class="btn btn-outline-secondary" target="_blank" title="Kelola Konfigurasi">
-                                        <i class="fas fa-plus"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <div class="col-6 col-md-3">
-                                <label class="small fw-bold">Load</label>
-                                <div class="input-group">
-                                    <input type="text" name="items[0][load]" class="form-control">
-                                    <span class="input-group-text">kg</span>
-                                </div>
-                            </div>
-
-
-                        </div>
+                    <div class="section-label"><i class="fas fa-cubes me-2"></i> Komponen Parts</div>
+                    <div id="items-container">
+                        {{-- kosongkan, tidak ada form default --}}
                     </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill w-100" onclick="addPartInput()">
+                        <i class="fas fa-plus-circle"></i> Tambah Komponen
+                    </button>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill w-100" onclick="addPartInput()"><i class="fas fa-plus-circle"></i> Tambah Komponen</button>
-            </div>
+                    
 
             <div class="section-card">
                     <div class="section-label"><i class="fas fa-hard-hat me-2"></i> Project Reference</div>
@@ -414,8 +346,14 @@
                                     <img src="" style="width:100%; height:100%; object-fit:cover;">
                                 </div>
                             </div>
-                            <div class="col-11">
-                                <textarea name="project_descriptions[]" class="form-control" rows="2" placeholder="Deskripsi singkat..."></textarea>
+                           <div class="col-11">
+                                <label class="small text-muted fw-bold">Deskripsi <span class="fw-normal">(maks. 10 kata)</span></label>
+                                <textarea name="project_descriptions[]" class="form-control" rows="2" 
+                                    placeholder="Deskripsi singkat..." 
+                                    oninput="limitWords(this, 10)"></textarea>
+                                <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                                    <span class="word-count">0</span>/10 kata
+                                </div>
                             </div>
                             <div class="col-1">
                                 <button type="button" class="btn btn-secondary btn-sm rounded-circle" disabled><i class="fas fa-times"></i></button>
@@ -501,72 +439,83 @@
         }
 
         // FUNGSI TAMBAH PART (UPDATE: NAMA OPTIONAL)
-        function addPartInput() {
-            const div = document.createElement('div');
-            div.className = 'item-part-card row-container';
-            div.innerHTML = `
-                <button type="button" class="btn-remove-part" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
-                <div class="row g-3">
-                    <div class="col-md-6"><label class="small fw-bold text-primary">Nama Part (Optional)</label><input type="text" name="items[${itemIndex}][name]" class="form-control"></div>
-                    <div class="col-md-6">
-                        <label class="small fw-bold text-primary">Foto Part</label>
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="file" name="items[${itemIndex}][image]" class="form-control" onchange="previewImage(this)">
-                            <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none;"><img src="" style="width:100%; height:100%; object-fit:cover;"></div>
-                        </div>
+       function addPartInput() {
+    const div = document.createElement('div');
+    div.className = 'item-part-card row-container';
+    div.innerHTML = `
+        <button type="button" class="btn-remove-part" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="small fw-bold">Nama Part</label>
+                <input type="text" name="items[${itemIndex}][name]" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="small fw-bold">Foto Part</label>
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="file" name="items[${itemIndex}][image]" class="form-control" onchange="previewImage(this)">
+                    <div class="preview-box" style="width:40px; height:40px; background:#eee; border-radius:5px; overflow:hidden; display:none;">
+                        <img src="" style="width:100%; height:100%; object-fit:cover;">
                     </div>
-
-                    <div class="col-md-12"><label class="small fw-bold text-primary">Deskripsi</label><textarea name="items[${itemIndex}][deskripsi]" class="form-control" rows="2" placeholder="Deskripsi singkat part..."></textarea></div>
-
-                   <div class="col-6 col-md-3">
-                        <label class="small fw-bold text-primary">Material</label>
-                        <div class="input-group">
-                            <select class="form-select" name="items[${itemIndex}][tipe]" style="cursor: pointer;">
-                                <option value="">Pilih...</option>
-                                @foreach($partMaterialList as $pm)
-                                    <option value="{{ $pm->name }}">{{ $pm->name }}</option>
-                                @endforeach
-                            </select>
-                            <a href="/part-materials" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-plus"></i></a>
-                        </div>
-                    </div>
-                    
-                    <div class="col-6 col-md-3">
-                        <label class="small fw-bold text-primary">Dimensi</label>
-                        <div class="input-group">
-                            <input type="text" name="items[${itemIndex}][dimensi]" class="form-control">
-                            <span class="input-group-text">mm</span>
-                        </div>
-                    </div>
-                    
-                    <div class="col-6 col-md-3">
-                        <label class="small fw-bold text-primary">Konfigurasi</label>
-                        <div class="input-group">
-                            <select class="form-select" name="items[${itemIndex}][konfigurasi]" style="cursor: pointer;">
-                                <option value="">Pilih...</option>
-                                @foreach($configurationList as $conf)
-                                    <option value="{{ $conf->name }}">{{ $conf->name }}</option>
-                                @endforeach
-                            </select>
-                            <a href="/configurations" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-plus"></i></a>
-                        </div>
-                    </div>
-
-
-                    <div class="col-6 col-md-3">
-                        <label class="small fw-bold text-primary">Load</label>
-                        <div class="input-group">
-                            <input type="text" name="items[${itemIndex}][load]" class="form-control">
-                            <span class="input-group-text">kg</span>
-                        </div>
-                    </div>
-
-
                 </div>
-            `;
-            document.getElementById('items-container').appendChild(div);
-            itemIndex++;
-        }
+            </div>
+
+            <div class="col-md-12">
+                <label class="small fw-bold">Deskripsi <span class="text-muted fw-normal">(maks. 200 karakter)</span></label>
+                <textarea name="items[${itemIndex}][deskripsi]" class="form-control" rows="2" 
+                    maxlength="200" placeholder="Deskripsi singkat part..."
+                    oninput="updateCharCount(this)"></textarea>
+                <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                    <span class="char-count">0</span>/200
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <label class="small fw-bold">Material</label>
+                <div class="input-group">
+                    <select class="form-select" name="items[${itemIndex}][tipe]" style="cursor:pointer;">
+                        <option value="">Pilih...</option>
+                        @foreach($partMaterialList as $pm)
+                            <option value="{{ $pm->name }}">{{ $pm->name }}</option>
+                        @endforeach
+                    </select>
+                    <a href="/part-materials" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-plus"></i></a>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <label class="small fw-bold">Dimensi</label>
+                <div class="input-group">
+                    <input type="text" name="items[${itemIndex}][dimensi]" class="form-control">
+                    <span class="input-group-text">mm</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <label class="small fw-bold">Konfigurasi</label>
+                <div class="input-group">
+                    <select class="form-select" name="items[${itemIndex}][konfigurasi]" style="cursor:pointer;">
+                        <option value="">Pilih...</option>
+                        @foreach($configurationList as $conf)
+                            <option value="{{ $conf->name }}">{{ $conf->name }}</option>
+                        @endforeach
+                    </select>
+                    <a href="/configurations" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-plus"></i></a>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <label class="small fw-bold">Load</label>
+                <div class="input-group">
+                    <input type="text" name="items[${itemIndex}][load]" class="form-control">
+                    <span class="input-group-text">kg</span>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('items-container').appendChild(div);
+    itemIndex++;
+}
+
 
      function addProjectInput() {
     const div = document.createElement('div');
@@ -582,8 +531,14 @@
             </div>
         </div>
         <div class="col-11">
-            <textarea name="project_descriptions[]" class="form-control" rows="2" placeholder="Deskripsi singkat..."></textarea>
-        </div>
+                <label class="small text-muted fw-bold">Deskripsi <span class="fw-normal">(maks. 10 kata)</span></label>
+                <textarea name="project_descriptions[]" class="form-control" rows="2" 
+                    placeholder="Deskripsi singkat..."
+                    oninput="limitWords(this, 10)"></textarea>
+                <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                    <span class="word-count">0</span>/10 kata
+                </div>
+            </div>
         <div class="col-1">
             <button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="this.closest('.row-container').remove()">
                 <i class="fas fa-times"></i>
@@ -626,6 +581,25 @@
             });
         @endif
         
+
+
+        // Counter karakter untuk deskripsi komponen
+function updateCharCount(textarea) {
+    const count = textarea.value.length;
+    const counter = textarea.parentElement.querySelector('.char-count');
+    if (counter) counter.textContent = count;
+}
+
+// Batasi 10 kata untuk deskripsi project
+function limitWords(textarea, maxWords) {
+    const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0);
+    if (words.length > maxWords) {
+        textarea.value = words.slice(0, maxWords).join(' ');
+    }
+    const wordCount = textarea.value.trim() === '' ? 0 : textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const counter = textarea.parentElement.querySelector('.word-count');
+    if (counter) counter.textContent = wordCount;
+}
 
 
     </script>

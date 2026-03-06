@@ -378,6 +378,8 @@
     </div>
 </div>
 
+
+@if(!$items->isEmpty())
 <div class="page-break"></div>
 
 {{-- ===== HALAMAN COMPONENT PARTS ===== --}}
@@ -395,106 +397,71 @@
             @foreach($items->chunk(2) as $chunk)
                 @php $part = $chunk->values(); @endphp
                 <tr>
-                    {{-- PART KIRI --}}
-                    <td style="width:50%; vertical-align:top;">
-                        @if(isset($part[0]))
-                        <div style="border:1px solid #e0e0e0; border-radius:8px; overflow:hidden; background:#fff;">
-                            <div style="padding:12px 15px; border-bottom:1px solid #f0f0f0;">
-                                <div style="font-weight:bold; font-size:13px; color:#0d2c6b; font-family:'Poppins',sans-serif;">
-                                    {{ $part[0]->nama_item }}
-                                </div>
-                            </div>
-                            <div style="width:100%; height:150px; background:#f8f9fa; text-align:center; border-bottom:1px solid #f0f0f0; line-height:150px;">
-                                @if($part[0]->foto_item)
-                                    <img src="{{ public_path('storage/' . $part[0]->foto_item) }}" style="max-width:85%; max-height:130px; object-fit:contain; vertical-align:middle;">
-                                @else
-                                    <span style="color:#ccc; font-size:11px; line-height:normal; display:inline-block; vertical-align:middle;">No Image</span>
-                                @endif
-                            </div>
-                            @if(!empty($part[0]->deskripsi))
-                            <div style="padding:10px 15px; font-size:10px; color:#666; line-height:1.6; border-bottom:1px solid #f0f0f0; background:#fafafa;">
-                                {{ Str::limit($part[0]->deskripsi, 200) }}
-                            </div>
-                            @endif
-                            <div style="background:#1a459c; padding:7px 15px;">
-                                <div style="font-size:10px; font-weight:bold; color:#fff; text-transform:uppercase; letter-spacing:1px; font-family:'Poppins',sans-serif;">
-                                    Technical Specification
-                                </div>
-                            </div>
-                            <table style="width:100%; font-size:11px; border-collapse:collapse;">
-                                <tr style="border-bottom:1px solid #f0f0f0;">
-                                    <td style="color:#888; padding:6px 15px; width:45%;">Material</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ $part[0]->tipe ?? '-' }}</td>
-                                </tr>
-                                <tr style="border-bottom:1px solid #f0f0f0; background:#fafafa;">
-                                    <td style="color:#888; padding:6px 15px;">Dimension</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ !empty($part[0]->dimensi_part) ? (stripos($part[0]->dimensi_part, 'mm') === false ? $part[0]->dimensi_part . ' mm' : $part[0]->dimensi_part) : '-' }}</td>
-                                </tr>
-                                <tr style="border-bottom:1px solid #f0f0f0;">
-                                    <td style="color:#888; padding:6px 15px;">Configuration</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ $part[0]->konfigurasi ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td style="color:#888; padding:6px 15px;">Load Capacity</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ !empty($part[0]->load_capacity) ? (stripos($part[0]->load_capacity, 'kg') === false ? $part[0]->load_capacity . ' kg' : $part[0]->load_capacity) : '-' }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        @endif
-                    </td>
+                   {{-- PART KIRI --}}
+<td style="width:50%; vertical-align:top; padding-right:5px;">
+    @if(isset($part[0]))
+    <div style="border:1px solid #e0e0e0; border-radius:8px; overflow:hidden; background:#fff;">
+        <div style="padding:12px 15px; border-bottom:1px solid #f0f0f0;">
+            <div style="font-weight:bold; font-size:13px; color:#0d2c6b; font-family:'Poppins',sans-serif;">{{ $part[0]->nama_item }}</div>
+        </div>
+        <div style="width:100%; height:160px; background:#f8f9fa; text-align:center; border-bottom:1px solid #f0f0f0; line-height:160px;">
+            @if($part[0]->foto_item)
+                <img src="{{ public_path('storage/' . $part[0]->foto_item) }}" style="max-width:85%; max-height:140px; object-fit:contain; vertical-align:middle;">
+            @else
+                <span style="color:#ccc; font-size:11px; vertical-align:middle;">No Image</span>
+            @endif
+        </div>
+        <div style="height:90px; padding:10px 15px; font-size:10px; color:#666; line-height:1.6; border-bottom:1px solid #f0f0f0; background:#fafafa; overflow:hidden;">
+            {{ !empty($part[0]->deskripsi) ? Str::limit($part[0]->deskripsi, 200) : '' }}
+        </div>
+        <div style="background:#1a459c; padding:7px 15px;">
+            <div style="font-size:10px; font-weight:bold; color:#fff; text-transform:uppercase; letter-spacing:1px; font-family:'Poppins',sans-serif;">Technical Specification</div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:11px; font-family:'Montserrat',sans-serif;">
+            <tr><td style="color:#888; padding:6px 15px; width:45%; border-bottom:1px solid #f0f0f0;">Material</td><td style="color:#222; padding:6px 15px; font-weight:bold; border-bottom:1px solid #f0f0f0;">{{ $part[0]->tipe ?? '-' }}</td></tr>
+            <tr style="background:#fafafa;"><td style="color:#888; padding:6px 15px; border-bottom:1px solid #f0f0f0;">Dimension</td><td style="color:#222; padding:6px 15px; font-weight:bold; border-bottom:1px solid #f0f0f0;">{{ !empty($part[0]->dimensi_part) ? (stripos($part[0]->dimensi_part, 'mm') === false ? $part[0]->dimensi_part . ' mm' : $part[0]->dimensi_part) : '-' }}</td></tr>
+            <tr><td style="color:#888; padding:6px 15px; border-bottom:1px solid #f0f0f0;">Configuration</td><td style="color:#222; padding:6px 15px; font-weight:bold; border-bottom:1px solid #f0f0f0;">{{ $part[0]->konfigurasi ?? '-' }}</td></tr>
+            <tr style="background:#fafafa;"><td style="color:#888; padding:6px 15px;">Load Capacity</td><td style="color:#222; padding:6px 15px; font-weight:bold;">{{ !empty($part[0]->load_capacity) ? (stripos($part[0]->load_capacity, 'kg') === false ? $part[0]->load_capacity . ' kg' : $part[0]->load_capacity) : '-' }}</td></tr>
+        </table>
+    </div>
+    @endif
+</td>
 
-                    {{-- PART KANAN --}}
-                    <td style="width:50%; vertical-align:top;">
-                        @if(isset($part[1]))
-                        <div style="border:1px solid #e0e0e0; border-radius:8px; overflow:hidden; background:#fff;">
-                            <div style="padding:12px 15px; border-bottom:1px solid #f0f0f0;">
-                                <div style="font-weight:bold; font-size:13px; color:#0d2c6b; font-family:'Poppins',sans-serif;">
-                                    {{ $part[1]->nama_item }}
-                                </div>
-                            </div>
-                            <div style="width:100%; height:150px; background:#f8f9fa; text-align:center; border-bottom:1px solid #f0f0f0; line-height:150px;">
-                                @if($part[1]->foto_item)
-                                    <img src="{{ public_path('storage/' . $part[1]->foto_item) }}" style="max-width:85%; max-height:130px; object-fit:contain; vertical-align:middle;">
-                                @else
-                                    <span style="color:#ccc; font-size:11px; line-height:normal; display:inline-block; vertical-align:middle;">No Image</span>
-                                @endif
-                            </div>
-                            @if(!empty($part[1]->deskripsi))
-                            <div style="padding:10px 15px; font-size:10px; color:#666; line-height:1.6; border-bottom:1px solid #f0f0f0; background:#fafafa;">
-                                {{ Str::limit($part[1]->deskripsi, 200) }}
-                            </div>
-                            @endif
-                            <div style="background:#1a459c; padding:7px 15px;">
-                                <div style="font-size:10px; font-weight:bold; color:#fff; text-transform:uppercase; letter-spacing:1px; font-family:'Poppins',sans-serif;">
-                                    Technical Specification
-                                </div>
-                            </div>
-                            <table style="width:100%; font-size:11px; border-collapse:collapse;">
-                                <tr style="border-bottom:1px solid #f0f0f0;">
-                                    <td style="color:#888; padding:6px 15px; width:45%;">Material</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ $part[1]->tipe ?? '-' }}</td>
-                                </tr>
-                                <tr style="border-bottom:1px solid #f0f0f0; background:#fafafa;">
-                                    <td style="color:#888; padding:6px 15px;">Dimension</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ !empty($part[1]->dimensi_part) ? (stripos($part[1]->dimensi_part, 'mm') === false ? $part[1]->dimensi_part . ' mm' : $part[1]->dimensi_part) : '-' }}</td>
-                                </tr>
-                                <tr style="border-bottom:1px solid #f0f0f0;">
-                                    <td style="color:#888; padding:6px 15px;">Configuration</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ $part[1]->konfigurasi ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td style="color:#888; padding:6px 15px;">Load Capacity</td>
-                                    <td style="color:#222; padding:6px 15px; font-weight:600;">{{ !empty($part[1]->load_capacity) ? (stripos($part[1]->load_capacity, 'kg') === false ? $part[1]->load_capacity . ' kg' : $part[1]->load_capacity) : '-' }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        @endif
-                    </td>
+{{-- PART KANAN --}}
+<td style="width:50%; vertical-align:top; padding-left:5px;">
+    @if(isset($part[1]))
+    <div style="border:1px solid #e0e0e0; border-radius:8px; overflow:hidden; background:#fff;">
+        <div style="padding:12px 15px; border-bottom:1px solid #f0f0f0;">
+            <div style="font-weight:bold; font-size:13px; color:#0d2c6b; font-family:'Poppins',sans-serif;">{{ $part[1]->nama_item }}</div>
+        </div>
+        <div style="width:100%; height:160px; background:#f8f9fa; text-align:center; border-bottom:1px solid #f0f0f0; line-height:160px;">
+            @if($part[1]->foto_item)
+                <img src="{{ public_path('storage/' . $part[1]->foto_item) }}" style="max-width:85%; max-height:140px; object-fit:contain; vertical-align:middle;">
+            @else
+                <span style="color:#ccc; font-size:11px; vertical-align:middle;">No Image</span>
+            @endif
+        </div>
+        <div style="height:90px; padding:10px 15px; font-size:10px; color:#666; line-height:1.6; border-bottom:1px solid #f0f0f0; background:#fafafa; overflow:hidden;">
+            {{ !empty($part[1]->deskripsi) ? Str::limit($part[1]->deskripsi, 200) : '' }}
+        </div>
+        <div style="background:#1a459c; padding:7px 15px;">
+            <div style="font-size:10px; font-weight:bold; color:#fff; text-transform:uppercase; letter-spacing:1px; font-family:'Poppins',sans-serif;">Technical Specification</div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:11px; font-family:'Montserrat',sans-serif;">
+            <tr><td style="color:#888; padding:6px 15px; width:45%; border-bottom:1px solid #f0f0f0;">Material</td><td style="color:#222; padding:6px 15px; font-weight:bold; border-bottom:1px solid #f0f0f0;">{{ $part[1]->tipe ?? '-' }}</td></tr>
+            <tr style="background:#fafafa;"><td style="color:#888; padding:6px 15px; border-bottom:1px solid #f0f0f0;">Dimension</td><td style="color:#222; padding:6px 15px; font-weight:bold; border-bottom:1px solid #f0f0f0;">{{ !empty($part[1]->dimensi_part) ? (stripos($part[1]->dimensi_part, 'mm') === false ? $part[1]->dimensi_part . ' mm' : $part[1]->dimensi_part) : '-' }}</td></tr>
+            <tr><td style="color:#888; padding:6px 15px; border-bottom:1px solid #f0f0f0;">Configuration</td><td style="color:#222; padding:6px 15px; font-weight:bold; border-bottom:1px solid #f0f0f0;">{{ $part[1]->konfigurasi ?? '-' }}</td></tr>
+            <tr style="background:#fafafa;"><td style="color:#888; padding:6px 15px;">Load Capacity</td><td style="color:#222; padding:6px 15px; font-weight:bold;">{{ !empty($part[1]->load_capacity) ? (stripos($part[1]->load_capacity, 'kg') === false ? $part[1]->load_capacity . ' kg' : $part[1]->load_capacity) : '-' }}</td></tr>
+        </table>
+    </div>
+    @endif
+</td>
                 </tr>
             @endforeach
         </table>
     @endif
 </div>
+@endif
 
 {{-- ===== HALAMAN PROJECT REFERENCES ===== --}}
 @if(count($projects) > 0)
