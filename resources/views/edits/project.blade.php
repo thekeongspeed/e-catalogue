@@ -91,9 +91,14 @@
                                 <div class="flex-grow-1">
                                     <label class="small text-muted mb-1 fw-bold">Lokasi / Tempat:</label>
                                     <input type="text" name="existing_places[{{ $p->id }}]" class="form-control form-control-sm bg-white" value="{{ $p->place }}" placeholder="Nama Lokasi...">
-                                    <label class="small text-muted mb-1 fw-bold">Deskripsi:</label>
-                                     <textarea name="existing_descriptions[{{ $p->id }}]" class="form-control form-control-sm bg-white" rows="2" placeholder="Deskripsi singkat...">{{ $p->description }}</textarea>
-                                </div>
+                                    <label class="small text-muted mb-1 fw-bold mt-2">Deskripsi <span class="fw-normal">(maks. 10 kata)</span></label>
+                                    <textarea name="existing_descriptions[{{ $p->id }}]" class="form-control form-control-sm bg-white" rows="2" 
+                                        placeholder="Deskripsi singkat..." 
+                                        oninput="limitWords(this, 10)">{{ $p->description }}</textarea>
+                                    <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                                        <span class="word-count">{{ count(array_filter(explode(' ', trim($p->description ?? '')))) }}</span>/10 kata
+                                    </div>
+                                                                    </div>
                             </div>
                         </div>
                         @endforeach
@@ -146,8 +151,14 @@
                     <button type="button" class="btn btn-danger btn-sm rounded-circle" style="width:30px; height:30px; padding:0;" onclick="this.closest('.row').remove()"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="col-11">
-            <label class="small text-muted mb-1 fw-bold">Deskripsi:</label>
-                <textarea name="project_descriptions_baru[]" class="form-control form-control-sm" rows="2" placeholder="Deskripsi singkat..."></textarea>
+           <div class="col-11">
+                <label class="small text-muted mb-1 fw-bold">Deskripsi <span class="fw-normal">(maks. 10 kata)</span></label>
+                <textarea name="project_descriptions_baru[]" class="form-control form-control-sm" rows="2" 
+                    placeholder="Deskripsi singkat..." oninput="limitWords(this, 10)"></textarea>
+                <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                    <span class="word-count">0</span>/10 kata
+                </div>
+            </div>
         </div>
                 <div class="col-12 mt-1" style="display:none;">
                      <div style="width:60px; height:60px; background:#eee; border-radius:8px; overflow:hidden;">
@@ -206,6 +217,22 @@
             });
         @endif
         
+
+        function updateCharCount(textarea) {
+    const count = textarea.value.length;
+    const counter = textarea.parentElement.querySelector('.char-count');
+    if (counter) counter.textContent = count;
+}
+
+function limitWords(textarea, maxWords) {
+    const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0);
+    if (words.length > maxWords) {
+        textarea.value = words.slice(0, maxWords).join(' ');
+    }
+    const wordCount = textarea.value.trim() === '' ? 0 : textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const counter = textarea.parentElement.querySelector('.word-count');
+    if (counter) counter.textContent = wordCount;
+}
 
 
     </script>

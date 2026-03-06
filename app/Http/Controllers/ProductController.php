@@ -659,7 +659,9 @@ return view('edits.spec', compact('product', 'gallery', 'dimensions', 'divisionL
         if (!session('is_admin')) return redirect('/login');
         $product = DB::table('products')->where('id', $id)->first();
         $items = DB::table('product_items')->where('product_id', $id)->get();
-        return view('edits.parts', compact('product', 'items'));
+         $partMaterialList  = DB::table('part_materials')->orderBy('name', 'asc')->get();
+    $configurationList = DB::table('configurations')->orderBy('name', 'asc')->get();
+    return view('edits.parts', compact('product', 'items', 'partMaterialList', 'configurationList'));
     }
 
  public function updateParts(Request $request, $id) 
@@ -724,7 +726,7 @@ return view('edits.spec', compact('product', 'gallery', 'dimensions', 'divisionL
                 $dataInsert = [
                     'product_id'    => $id,
                     'nama_item'     => $newItem['name'],
-                    'deskripsi'  => $itemData['deskripsi'] ?? null,
+                    'deskripsi'  => $newItem['deskripsi'] ?? null,
                     'tipe'          => $newItem['tipe'] ?? null,
                     'dimensi_part'  => $newItem['dimensi'] ?? null,
                     'konfigurasi'   => $newItem['konfigurasi'] ?? null,

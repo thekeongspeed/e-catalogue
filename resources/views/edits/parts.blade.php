@@ -111,13 +111,24 @@
                         </div>
 
                         <div class="col-md-12">
-                            <label class="form-label">Deskripsi</label>
-                            <textarea name="items[{{ $index }}][deskripsi]" class="form-control" rows="2">{{ $item->deskripsi ?? '' }}</textarea>
+                            <label class="form-label">Deskripsi <span class="text-muted fw-normal" style="font-size:11px;">(maks. 200 karakter)</span></label>
+                            <textarea name="items[{{ $index }}][deskripsi]" class="form-control" rows="2" 
+                                maxlength="200" oninput="updateCharCount(this)">{{ $item->deskripsi ?? '' }}</textarea>
+                            <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                                <span class="char-count">{{ strlen($item->deskripsi ?? '') }}</span>/200
+                            </div>
                         </div>
                                                 
                        <div class="col-6 col-md-6">
                             <label class="form-label">Material</label>
-                            <option value="{{ $pm->name }}" {{ ($item->tipe ?? '') == $pm->name ? 'selected' : '' }}>
+                            <select name="items[{{ $index }}][tipe]" class="form-select">
+                                <option value="">Pilih...</option>
+                                @foreach($partMaterialList as $pm)
+                                    <option value="{{ $pm->name }}" {{ ($item->tipe ?? '') == $pm->name ? 'selected' : '' }}>
+                                        {{ $pm->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         
                         <div class="col-6 col-md-6">
@@ -129,10 +140,17 @@
                         </div>
                         
                         <div class="col-6 col-md-3">
-                            <label class="form-label">Konfigurasi</label>
-                           <option value="{{ $conf->name }}" {{ ($item->konfigurasi ?? '') == $conf->name ? 'selected' : '' }}>
-                        </div>
-                        
+                                <label class="form-label">Konfigurasi</label>
+                                <select name="items[{{ $index }}][konfigurasi]" class="form-select">
+                                    <option value="">Pilih...</option>
+                                    @foreach($configurationList as $conf)
+                                        <option value="{{ $conf->name }}" {{ ($item->konfigurasi ?? '') == $conf->name ? 'selected' : '' }}>
+                                            {{ $conf->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                                                    
                         <div class="col-6 col-md-3">
                             <label class="form-label">Beban / Load</label>
                             <div class="input-group">
@@ -223,9 +241,13 @@
                         <input type="file" name="new_items[${partIndex}][image]" class="form-control">
                     </div>
 
-                     <div class="col-6 col-md-3">
-                        <label class="form-label text-muted small fw-bold">Deskripsi</label>
-                        <input type="text" name="new_items[${partIndex}][deskripsi]" class="form-control">
+                     <div class="col-md-12">
+                        <label class="form-label text-muted small fw-bold">Deskripsi <span class="fw-normal">(maks. 200 karakter)</span></label>
+                        <textarea name="new_items[${partIndex}][deskripsi]" class="form-control" rows="2" 
+                            maxlength="200" placeholder="Deskripsi singkat part..." oninput="updateCharCount(this)"></textarea>
+                        <div class="text-end" style="font-size:11px; color:#999; margin-top:3px;">
+                            <span class="char-count">0</span>/200
+                        </div>
                     </div>
                     
                     <div class="col-6 col-md-3">
@@ -257,15 +279,36 @@
         }
         
 
-        public function editParts($id) {
-    if (!session('is_admin')) return redirect('/login');
-    $product        = DB::table('products')->where('id', $id)->first();
-    $items          = DB::table('product_items')->where('product_id', $id)->get();
-    $partMaterialList  = DB::table('part_materials')->orderBy('name', 'asc')->get();
-    $configurationList = DB::table('configurations')->orderBy('name', 'asc')->get();
-    return view('edits.parts', compact('product', 'items', 'partMaterialList', 'configurationList'));
+function updateCharCount(textarea) {
+    const count = textarea.value.length;
+    const counter = textarea.parentElement.querySelector('.char-count');
+    if (counter) counter.textContent = count;
 }
 
+function limitWords(textarea, maxWords) {
+    const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0);
+    if (words.length > maxWords) {
+        textarea.value = words.slice(0, maxWords).join(' ');
+    }
+    const wordCount = textarea.value.trim() === '' ? 0 : textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const counter = textarea.parentElement.querySelector('.word-count');
+    if (counter) counter.textContent = wordCount;
+}
+
+
+
+// Inisialisasi counter untuk textarea yang sudah ada saat halaman load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('textarea[maxlength]').forEach(function(textarea) {
+        const counter = textarea.parentElement.querySelector('.char-count');
+        if (counter) counter.textContent = textarea.value.length;
+    });
+});
+
+
+
     </script>
+
+
 </body>
 </html>
