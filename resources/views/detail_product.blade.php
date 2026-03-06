@@ -206,143 +206,173 @@
 
         <div class="content-wrapper">
             
-            <div id="spec" class="content-area">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                    <h5 class="fw-bold text-primary m-0"><i class="fas fa-clipboard-list me-2"></i> Technical Specification</h5>
-                    
-                    @if(session('is_admin'))
-                        <div>
-                            <a href="{{ url('/edit-spec/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3 me-2">
-                                <i class="fas fa-edit me-1"></i> Edit Spec
-                            </a>
-                            <a href="{{ url('/delete-product/' . $product->id) }}" 
-                               class="btn btn-sm btn-danger rounded-pill px-3"
-                               onclick="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus produk {{ $product->nama_barang }}? \n\nData tidak bisa dikembalikan.')">
-                                <i class="fas fa-trash-alt me-1"></i> Delete Product
-                            </a>
-                        </div>
-                    @endif
-                </div>
-                
-                <table class="spec-table">
-             <tr>
-                        <td class="spec-label">Customer</td>
-                        <td class="spec-value">{{ $product->nama_customer }}</td>
-                    </tr>
-                    <tr>
-                        <td class="spec-label">Base Material</td>
-                        <td class="spec-value">{{ $product->jenis_material ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="spec-label">Finishing / Color</td>
-                        <td class="spec-value">{{ $product->finishing ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="spec-label">Type / Series</td>
-                        <td class="spec-value">{{ $product->tipe ?? '-' }}</td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="spec-label">Color Available</td>
-                        <td class="spec-value">{{ $product->color_available ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="spec-label">Price Estimate</td>
-                        <td class="spec-value fw-bold text-success">
-                            @if($product->price)
-                                Rp {{ number_format($product->price, 0, ',', '.') }}
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-
-                    <tr><td colspan="2" class="spec-header">Product Dimension (Available Sizes)</td></tr>
-                    
-                    @if($dimensions->isEmpty())
-                        <tr><td colspan="2" class="text-center text-muted fst-italic py-2">- Belum ada data dimensi -</td></tr>
-                    @else
-                        @foreach($dimensions as $index => $dim)
-                        <tr>
-                            <td class="spec-label" style="vertical-align: top;">
-                                @if($dim->item_code)
-                                    <span class="badge bg-primary">{{ $dim->item_code }}</span>
-                                @else
-                                    Size #{{ $index + 1 }}
-                                @endif
-                            </td>
-                            <td class="spec-value">
-                                <span class="badge bg-light text-dark border me-1">P: {{ floatval($dim->panjang) }}</span>
-                                <span class="badge bg-light text-dark border me-1">L: {{ floatval($dim->lebar) }}</span>
-                                <span class="badge bg-light text-dark border me-1">T: {{ floatval($dim->tinggi) }}</span>
-                                @if($dim->kedalaman)
-                                    <span class="badge bg-light text-dark border">D: {{ floatval($dim->kedalaman) }}</span>
-                                @endif
-                                <span class="text-muted small ms-1">mm</span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    @endif
-                </table>
-                <p class="small text-muted">* Spesifikasi dapat berubah disesuaikan dengan kebutuhan custom project.</p>
+           <div id="spec" class="content-area">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h5 class="fw-bold text-primary m-0"><i class="fas fa-clipboard-list me-2"></i> Technical Specification</h5>
+        
+        @if(session('is_admin'))
+            <div>
+                <a href="{{ url('/edit-spec/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3 me-2">
+                    <i class="fas fa-edit me-1"></i> Edit Spec
+                </a>
+                <a href="{{ url('/delete-product/' . $product->id) }}" 
+                   class="btn btn-sm btn-danger rounded-pill px-3"
+                   onclick="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus produk {{ $product->nama_barang }}? \n\nData tidak bisa dikembalikan.')">
+                    <i class="fas fa-trash-alt me-1"></i> Delete Product
+                </a>
             </div>
+        @endif
+    </div>
+
+    {{-- INFO CARDS --}}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div style="background:#f8f9fa; border-radius:12px; padding:15px; border:1px solid #eee;">
+                <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Customer</div>
+                <div style="font-size:15px; font-weight:700; color:#1a459c;">{{ $product->nama_customer }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div style="background:#f8f9fa; border-radius:12px; padding:15px; border:1px solid #eee;">
+                <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Divisi</div>
+                <div style="font-size:15px; font-weight:700; color:#333;">{{ $product->divisi ?? '-' }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div style="background:#f8f9fa; border-radius:12px; padding:15px; border:1px solid #eee;">
+                <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Material</div>
+                <div style="font-size:15px; font-weight:700; color:#333;">{{ $product->jenis_material ?? '-' }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div style="background:#f8f9fa; border-radius:12px; padding:15px; border:1px solid #eee;">
+                <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Finishing</div>
+                <div style="font-size:15px; font-weight:700; color:#333;">{{ $product->finishing ?? '-' }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div style="background:#f8f9fa; border-radius:12px; padding:15px; border:1px solid #eee;">
+                <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Max Load</div>
+                <div style="font-size:15px; font-weight:700; color:#333;">{{ !empty($product->max_load) ? $product->max_load . ' kg' : '-' }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div style="background:#f8f9fa; border-radius:12px; padding:15px; border:1px solid #eee;">
+                <div style="font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Application</div>
+                <div style="font-size:13px; font-weight:600; color:#333;">{{ $product->application ?? '-' }}</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- DIMENSION TABLE --}}
+    <div style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#1a459c; margin-bottom:12px;">
+        <i class="fas fa-ruler-combined me-2"></i> Dimension Details
+    </div>
+
+    @if($dimensions->isEmpty())
+        <div class="text-center text-muted fst-italic py-3">- Belum ada data dimensi -</div>
+    @else
+        <div style="border-radius:12px; overflow:hidden; border:1px solid #eee;">
+            <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                <thead>
+                    <tr style="background-color:#1a459c;">
+                        <th style="padding:12px 20px; color:white; font-weight:600; text-align:left;">Item Code</th>
+                        <th style="padding:12px 20px; color:white; font-weight:600; text-align:left;">Item Name</th>
+                        <th style="padding:12px 20px; color:white; font-weight:600; text-align:left;">Dimension</th>
+                        <th style="padding:12px 20px; color:white; font-weight:600; text-align:left;">Color</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($dimensions as $i => $dim)
+                    <tr style="background-color: {{ $i % 2 == 0 ? '#fff' : '#f8fafd' }};">
+                        <td style="padding:12px 20px; border-bottom:1px solid #eee; font-weight:700; color:#1a459c;">{{ $dim->item_code ?? '-' }}</td>
+                        <td style="padding:12px 20px; border-bottom:1px solid #eee;">{{ $dim->item_name ?? '-' }}</td>
+                        <td style="padding:12px 20px; border-bottom:1px solid #eee;">{{ $dim->panjang ?? '-' }}</td>
+                        <td style="padding:12px 20px; border-bottom:1px solid #eee;">{{ $dim->color ?? '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+
+    <p class="small text-muted mt-3">* Spesifikasi dapat berubah disesuaikan dengan kebutuhan custom project.</p>
+</div>
+
 
             <div id="parts" class="content-area hidden">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold text-primary m-0"><i class="fas fa-cubes me-2"></i> Component Details</h5>
-                    @if(session('is_admin'))
-                        <a href="{{ url('/edit-parts/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3">
-                            <i class="fas fa-edit me-1"></i> Edit Parts
-                        </a>        
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold text-primary m-0"><i class="fas fa-cubes me-2"></i> Component Details</h5>
+                        @if(session('is_admin'))
+                            <a href="{{ url('/edit-parts/' . $product->id) }}" class="btn btn-sm btn-warning rounded-pill px-3">
+                                <i class="fas fa-edit me-1"></i> Edit Parts
+                            </a>        
+                        @endif
+                    </div>
+                    
+                    @if($items->isEmpty())
+                        <div class="text-muted fst-italic py-3 text-center">- Belum ada data komponen parts -</div>
+                    @else
+                        <div class="row g-3">
+                            @foreach($items as $item)
+                            <div class="col-12 col-md-6">
+                                <div style="border:1px solid #e0e0e0; border-radius:14px; overflow:hidden; background:#fff; height:100%;">
+                                    
+                                    {{-- IMAGE + TITLE ROW --}}
+                                    <div style="display:flex; align-items:stretch;">
+                                        {{-- Gambar --}}
+                                        <div onclick="openLightbox('{{ $item->foto_item ? asset('storage/'.$item->foto_item) : '' }}')"
+                                            style="width:110px; min-height:110px; background:#f4f6fb; display:flex; align-items:center; justify-content:center; cursor:zoom-in; flex-shrink:0; border-right:1px solid #eee;">
+                                            @if($item->foto_item)
+                                                <img src="{{ asset('storage/'.$item->foto_item) }}" style="max-width:90px; max-height:90px; object-fit:contain;">
+                                            @else
+                                                <i class="fas fa-image fa-2x text-muted"></i>
+                                            @endif
+                                        </div>
+
+                                        {{-- Nama & Deskripsi --}}
+                                        <div style="padding:15px; flex-grow:1;">
+                                            <div style="font-size:16px; font-weight:700; color:#1a459c; margin-bottom:6px;">
+                                                {{ $item->nama_item ?? '-' }}
+                                            </div>
+                                            @if(!empty($item->deskripsi))
+                                                <div style="font-size:12px; color:#666; line-height:1.6;">
+                                                    {{ $item->deskripsi }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- SPEC GRID --}}
+                                    <div style="background:#f8f9fa; border-top:1px solid #eee; display:grid; grid-template-columns:1fr 1fr; gap:0;">
+                                        <div style="padding:10px 15px; border-right:1px solid #eee; border-bottom:1px solid #eee;">
+                                            <div style="font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Type / Series</div>
+                                            <div style="font-size:13px; font-weight:600; color:#333; margin-top:2px;">{{ $item->tipe ?? '-' }}</div>
+                                        </div>
+                                        <div style="padding:10px 15px; border-bottom:1px solid #eee;">
+                                            <div style="font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Dimension</div>
+                                            <div style="font-size:13px; font-weight:600; color:#333; margin-top:2px;">
+                                                {{ !empty($item->dimensi_part) ? (stripos($item->dimensi_part, 'mm') === false ? $item->dimensi_part . ' mm' : $item->dimensi_part) : '-' }}
+                                            </div>
+                                        </div>
+                                        <div style="padding:10px 15px; border-right:1px solid #eee;">
+                                            <div style="font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Configuration</div>
+                                            <div style="font-size:13px; font-weight:600; color:#333; margin-top:2px;">{{ $item->konfigurasi ?? '-' }}</div>
+                                        </div>
+                                        <div style="padding:10px 15px;">
+                                            <div style="font-size:10px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Load Capacity</div>
+                                            <div style="font-size:13px; font-weight:600; color:#333; margin-top:2px;">
+                                                {{ !empty($item->load_capacity) ? (stripos($item->load_capacity, 'kg') === false ? $item->load_capacity . ' kg' : $item->load_capacity) : '-' }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
                     @endif
                 </div>
-                
-                @if($items->isEmpty())
-                    <div class="text-muted fst-italic py-3 text-center">- Belum ada data komponen parts -</div>
-                @else
-                    @foreach($items as $item)
-                    <div class="part-card">
-                        <div class="part-img-wrapper" onclick="openLightbox('{{ $item->foto_item ? asset('storage/'.$item->foto_item) : '' }}')">
-                            @if($item->foto_item)
-                                <img src="{{ asset('storage/'.$item->foto_item) }}">
-                            @else
-                                <span class="text-muted small">No Image</span>
-                            @endif
-                        </div>
-
-                        <div class="part-details">
-                            <div class="part-title" onclick="openLightbox('{{ $item->foto_item ? asset('storage/'.$item->foto_item) : '' }}')">
-                                {{ $item->nama_item }}
-                            </div>
-                            
-                            <table class="part-spec-table">
-                                <tr>
-                                    <td class="part-label">Type / Series</td>
-                                    <td class="part-val">{{ $item->tipe ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="part-label">Dimension</td>
-                                    <td class="part-val">
-                                        {{ !empty($item->dimensi_part) ? (stripos($item->dimensi_part, 'mm') === false ? $item->dimensi_part . ' mm' : $item->dimensi_part) : '-' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="part-label">Configuration</td>
-                                    <td class="part-val">{{ $item->konfigurasi ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="part-label">Load Capacity</td>
-                                    <td class="part-val">
-                                        {{ !empty($item->load_capacity) ? (stripos($item->load_capacity, 'kg') === false ? $item->load_capacity . ' kg' : $item->load_capacity) : '-' }}
-                                    </td>
-                                </tr>
-                            </table>
-                            
-                        </div>
-                    </div>
-                    @endforeach
-                @endif
-            </div>
 
             <div id="project" class="content-area hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -370,6 +400,12 @@
                                 <i class="fas fa-map-marker-alt me-1 text-danger"></i> 
                                 {{ $proj->place ?? 'Lokasi Project' }}
                             </div>
+
+                              @if(!empty($proj->description))
+                                <div class="text-center small text-muted mt-1" style="font-size: 12px; line-height: 1.4;">
+                                    {{ $proj->description }}
+                                </div>
+                                @endif
                         </div>
                         @endforeach
                     </div>

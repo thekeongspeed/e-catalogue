@@ -109,13 +109,18 @@
                                 <img src="{{ asset('storage/'.$item->foto_item) }}" class="rounded border" style="width: 45px; height: 45px; object-fit: cover;">
                             @endif
                         </div>
-                        
-                       <div class="col-6 col-md-3">
-                            <label class="form-label">Tipe</label>
-                            <input type="text" name="items[{{ $index }}][tipe]" class="form-control" value="{{ $item->tipe ?? '' }}">
+
+                        <div class="col-md-12">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="items[{{ $index }}][deskripsi]" class="form-control" rows="2">{{ $item->deskripsi ?? '' }}</textarea>
+                        </div>
+                                                
+                       <div class="col-6 col-md-6">
+                            <label class="form-label">Material</label>
+                            <option value="{{ $pm->name }}" {{ ($item->tipe ?? '') == $pm->name ? 'selected' : '' }}>
                         </div>
                         
-                        <div class="col-6 col-md-3">
+                        <div class="col-6 col-md-6">
                             <label class="form-label">Dimensi</label>
                             <div class="input-group">
                                 <input type="text" name="items[{{ $index }}][dimensi]" class="form-control" value="{{ $item->dimensi_part ?? '' }}">
@@ -125,7 +130,7 @@
                         
                         <div class="col-6 col-md-3">
                             <label class="form-label">Konfigurasi</label>
-                            <input type="text" name="items[{{ $index }}][konfigurasi]" class="form-control" value="{{ $item->konfigurasi ?? '' }}">
+                           <option value="{{ $conf->name }}" {{ ($item->konfigurasi ?? '') == $conf->name ? 'selected' : '' }}>
                         </div>
                         
                         <div class="col-6 col-md-3">
@@ -217,6 +222,11 @@
                         <label class="form-label text-muted small fw-bold">Foto Part</label>
                         <input type="file" name="new_items[${partIndex}][image]" class="form-control">
                     </div>
+
+                     <div class="col-6 col-md-3">
+                        <label class="form-label text-muted small fw-bold">Deskripsi</label>
+                        <input type="text" name="new_items[${partIndex}][deskripsi]" class="form-control">
+                    </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label text-muted small fw-bold">Tipe</label>
@@ -246,6 +256,16 @@
             partIndex++;
         }
         
+
+        public function editParts($id) {
+    if (!session('is_admin')) return redirect('/login');
+    $product        = DB::table('products')->where('id', $id)->first();
+    $items          = DB::table('product_items')->where('product_id', $id)->get();
+    $partMaterialList  = DB::table('part_materials')->orderBy('name', 'asc')->get();
+    $configurationList = DB::table('configurations')->orderBy('name', 'asc')->get();
+    return view('edits.parts', compact('product', 'items', 'partMaterialList', 'configurationList'));
+}
+
     </script>
 </body>
 </html>

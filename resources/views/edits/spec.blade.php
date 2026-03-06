@@ -62,6 +62,11 @@
         /* Efek Focus */
         .input-group:focus-within .input-group-text, .input-group:focus-within .form-control { border-color: #1a459c; background-color: #eef2ff; }
         .input-group:focus-within .form-control { box-shadow: none; background-color: #fff; }
+
+        .input-group .input-group-text:first-child + .form-select { border-left: none; }
+.input-group:focus-within .form-select { border-color: #1a459c; box-shadow: none; background-color: #fff; }
+
+
     </style>
 </head>
 <body>
@@ -78,36 +83,121 @@
             <div class="section-card">
                 <div class="section-label"><i class="fas fa-info-circle me-2"></i> Informasi Dasar</div>
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Customer</label><input type="text" name="nama_customer" class="form-control" value="{{ $product->nama_customer ?? '' }}"></div>
-                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Barang</label><input type="text" name="nama_barang" class="form-control" value="{{ $product->nama_barang ?? '' }}"></div>
-                    <div class="col-md-4"><label class="small fw-bold text-muted">Material</label><input type="text" name="jenis_material" class="form-control" value="{{ $product->jenis_material ?? '' }}"></div>
-                    <div class="col-md-4"><label class="small fw-bold text-muted">Finishing</label><input type="text" name="finishing" class="form-control" value="{{ $product->finishing ?? '' }}"></div>
-                    <div class="col-md-4"><label class="small fw-bold text-muted">Tipe</label><input type="text" name="tipe" class="form-control" value="{{ $product->tipe ?? '' }}"></div>
+                    <div class="col-md-6">
+                            <label class="small fw-bold text-muted">Nama Customer</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                <select class="form-select" name="nama_customer" style="cursor: pointer;">
+                                    <option value="">-- Pilih Customer --</option>
+                                    @foreach($customerList as $cust)
+                                        <option value="{{ $cust->name }}"
+                                            {{ ($product->nama_customer ?? '') == $cust->name ? 'selected' : '' }}>
+                                            {{ $cust->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <a href="/customers" class="btn btn-outline-secondary" title="Kelola Customer" target="_blank">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
 
-                    <div class="col-md-6">
-                        <label class="small fw-bold text-muted">Color Available</label>
-                        <input type="text" name="color_available" class="form-control" value="{{ $product->color_available ?? '' }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="small fw-bold text-muted">Price (Rp)</label>
+                     <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Divisi</label>
                         <div class="input-group">
-                            <span class="input-group-text fw-bold">Rp</span>
-                            <input type="text" class="form-control" 
-                                   value="{{ !empty($product->price) ? number_format($product->price, 0, ',', '.') : '' }}" 
-                                   onkeyup="formatRupiah(this)">
-                            <input type="hidden" name="price" id="price_actual" value="{{ $product->price ?? '' }}">
+                            <span class="input-group-text"><i class="fas fa-sitemap"></i></span>
+                            <select class="form-select" name="divisi" style="cursor: pointer;">
+                                <option value="">-- Pilih Divisi --</option>
+                                @foreach($divisionList as $div)
+                                    <option value="{{ $div->name }}"
+                                        {{ ($product->divisi ?? '') == $div->name ? 'selected' : '' }}>
+                                        {{ $div->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <a href="/divisions" class="btn btn-outline-secondary" title="Kelola Divisi" target="_blank">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-6"><label class="small fw-bold text-muted">Nama Barang</label><input type="text" name="nama_barang" class="form-control" value="{{ $product->nama_barang ?? '' }}"></div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Material</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
+                            <select class="form-select" name="jenis_material" style="cursor: pointer;">
+                                <option value="">-- Pilih Material --</option>
+                                @foreach($materialList as $mat)
+                                    <option value="{{ $mat->name }}" {{ ($product->jenis_material ?? '') == $mat->name ? 'selected' : '' }}>
+                                        {{ $mat->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <a href="/materials" class="btn btn-outline-secondary" title="Kelola Material" target="_blank">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                   <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Finishing</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-paint-roller"></i></span>
+                            <select class="form-select" name="finishing" style="cursor: pointer;">
+                                <option value="">-- Pilih Finishing --</option>
+                                @foreach($finishingList as $fin)
+                                    <option value="{{ $fin->name }}" {{ ($product->finishing ?? '') == $fin->name ? 'selected' : '' }}>
+                                        {{ $fin->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <a href="/finishings" class="btn btn-outline-secondary" title="Kelola Finishing" target="_blank">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        </div>
+                    </div>
+       
+  
+                 
+                   
+                                        <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Max Load</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-weight-hanging"></i></span>
+                            <input type="number" name="max_load" class="form-control" 
+                                value="{{ $product->max_load ?? '' }}" placeholder="Contoh: 20">
+                            <span class="input-group-text">kg</span>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-12">
+                        <label class="small fw-bold text-muted">Application</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                            <input type="text" name="application" class="form-control"
+                                value="{{ $product->application ?? '' }}"
+                                placeholder="Contoh: Minimarket, Supermarket, Pharmacy">
+                        </div>
+                        <div class="form-text text-muted" style="font-size: 11px; margin-top: 4px;">
+                            * Pisahkan setiap item dengan tanda koma
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="section-card mt-4">
-                <div class="section-label"><i class="fas fa-ruler-combined me-2"></i> Dimensi Produk</div>
+                <div class="section-label"><i class="fas fa-ruler-combined me-2"></i> Details</div>
                 <table class="table table-borderless align-middle" id="dimensiTable">
                     <thead>
                         <tr class="border-bottom">
-                            <th style="width: 15%">Item Code</th>
-                            <th>Panjang</th> <th>Lebar</th> <th>Tinggi</th> <th>Kedalaman</th> <th>Hapus</th>
+                           <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Dimension (PxLxT)</th>
+                            <th>Color</th>
+                            <th>Hapus</th>
                         </tr>
                     </thead>
 
@@ -115,62 +205,20 @@
                   <tbody>
                         @if(isset($dimensions) && count($dimensions) > 0)
                             @foreach($dimensions as $dim)
-                            <tr>
+                           <tr>
                                 <td><input type="text" name="dim_item_code[]" class="form-control" value="{{ $dim->item_code ?? '' }}" placeholder="Code"></td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_panjang[]" class="form-control" value="{{ $dim->panjang ?? '' }}">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_lebar[]" class="form-control" value="{{ $dim->lebar ?? '' }}">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_tinggi[]" class="form-control" value="{{ $dim->tinggi ?? '' }}">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" value="{{ $dim->kedalaman ?? '' }}">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
+                                <td><input type="text" name="dim_item_name[]" class="form-control" value="{{ $dim->item_name ?? '' }}" placeholder="Item Name"></td>
+                                <td><input type="text" name="dim_dimension[]" class="form-control" value="{{ $dim->panjang ?? '' }}" placeholder="Contoh: 45 x 50 x 100"></td>
+                                <td><input type="text" name="dim_color[]" class="form-control" value="{{ $dim->color ?? '' }}" placeholder="Color"></td>
                                 <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                             </tr>
                             @endforeach
                         @else
                             <tr>
                                 <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0">
-                                        <span class="input-group-text">mm</span>
-                                    </div>
-                                </td>
+                                <td><input type="text" name="dim_item_name[]" class="form-control" placeholder="Item Name"></td>
+                                <td><input type="text" name="dim_dimension[]" class="form-control" placeholder="Contoh: 45 x 50 x 100"></td>
+                                <td><input type="text" name="dim_color[]" class="form-control" value="{{ $dim->color ?? '' }}" placeholder="Color"></td>
                                 <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                             </tr>
                         @endif
@@ -309,38 +357,17 @@
 
         // Tambah Baris Dimensi
       // Tambah Baris Dimensi
-        function addDimensiRow() {
-            let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
-            let newRow = tbody.insertRow();
-            newRow.innerHTML = `
-                <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" step="0.01" name="dim_panjang[]" class="form-control" placeholder="0">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" step="0.01" name="dim_lebar[]" class="form-control" placeholder="0">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" step="0.01" name="dim_tinggi[]" class="form-control" placeholder="0">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" step="0.01" name="dim_kedalaman[]" class="form-control" placeholder="0">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
-            `;
-        }
+       function addDimensiRow() {
+    let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
+    let newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
+        <td><input type="text" name="dim_item_name[]" class="form-control" placeholder="Item Name"></td>
+        <td><input type="text" name="dim_dimension[]" class="form-control" placeholder="Contoh: 45 x 50 x 100"></td>
+        <td><input type="text" name="dim_color[]" class="form-control"  placeholder="Contoh: White Satin"></td>
+        <td class="text-center"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
         
 
         // Hapus Baris Dimensi
@@ -349,17 +376,7 @@
             if (row.parentElement.rows.length > 1) row.remove();
         }
 
-        // Format Rupiah
-        function formatRupiah(input) {
-            let value = input.value.replace(/[^0-9]/g, '');
-            if (!value) {
-                input.value = '';
-                document.getElementById('price_actual').value = '';
-                return;
-            }
-            document.getElementById('price_actual').value = value;
-            input.value = parseInt(value).toLocaleString('id-ID');
-        }
+      
     </script>
 </body>
 </html>

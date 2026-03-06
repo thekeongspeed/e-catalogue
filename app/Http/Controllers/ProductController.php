@@ -52,11 +52,13 @@ class ProductController extends Controller
             'jenis_material'  => 'nullable|string',
             'finishing'       => 'nullable|string',
             'color_available' => 'nullable|string',
-            'price'           => 'nullable|numeric',
-            
+           
+            'divisi'          => 'nullable|string',
             // Jika ada validasi untuk array (dimensi, part, gallery), jadikan nullable juga
-            'dim_panjang'     => 'nullable|array',
+            'dim_item_code'     => 'nullable|array',
             'foto_barang'     => 'nullable|array',
+            'max_load' => 'nullable|string',
+            'application' => 'nullable|string',
         ]);
 
 
@@ -69,10 +71,12 @@ class ProductController extends Controller
             'jenis_material'=> $request->jenis_material ?? '-',
             'finishing'     => $request->finishing ?? '-',
             'tipe'          => $request->tipe ?? '-',
+            'divisi'        => $request->divisi ?? '-',
             'color_available' => $request->color_available ?? '-',
-            
+            'application' => $request->application ?? null,
+            'max_load' => $request->max_load ?? null,
             // Khusus harga (price), jika kosong jadikan angka 0
-            'price'           => $request->price ?? 0,
+        
             
             'created_at'    => now(),
             'updated_at'    => now(),
@@ -94,29 +98,27 @@ class ProductController extends Controller
 
         // 3. Simpan Dimensi (Penyempurnaan Pengecekan)
         // Pengecekan pakai dim_item_code & is_array agar tidak error PHP count()
-        if ($request->has('dim_item_code') && is_array($request->dim_item_code)) {
-            $codes   = $request->dim_item_code; 
-            $panjang = $request->dim_panjang;
-            $lebar   = $request->dim_lebar;
-            $tinggi  = $request->dim_tinggi;
-            $kedalam = $request->dim_kedalaman;
-            
-            for ($i = 0; $i < count($codes); $i++) {
-                // PENYEMPURNAAN: Simpan jika Item Code ATAU Dimensi terisi
-                if (!empty($codes[$i]) || !empty($panjang[$i]) || !empty($lebar[$i]) || !empty($tinggi[$i])) {
-                    DB::table('product_dimensions')->insert([
-                        'product_id' => $productId,
-                        'item_code'  => $codes[$i] ?? null,
-                        'panjang'    => $panjang[$i] ?? null,
-                        'lebar'      => $lebar[$i] ?? null,
-                        'tinggi'     => $tinggi[$i] ?? null,
-                        'kedalaman'  => $kedalam[$i] ?? null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-            }
+       if ($request->has('dim_item_code') && is_array($request->dim_item_code)) {
+    $codes     = $request->dim_item_code;
+    $names     = $request->dim_item_name;
+    $dimension = $request->dim_dimension;
+    $dim_colors = $request->dim_color; 
+
+    for ($i = 0; $i < count($codes); $i++) {
+        if (!empty($codes[$i]) || !empty($names[$i]) || !empty($dimension[$i])) {
+            DB::table('product_dimensions')->insert([
+                'product_id' => $productId,
+                'item_code'  => $codes[$i] ?? null,
+                'item_name'  => $names[$i] ?? null,
+                'panjang'    => $dimension[$i] ?? null,
+                'color' => $dim_colors[$i] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
+    }
+}
+
 
         // 4. Simpan Parts (Update: Nama Jadi Optional)
         if ($request->items) {
@@ -129,6 +131,7 @@ class ProductController extends Controller
                 $dataPart = [
                     'product_id' => $productId,
                     'nama_item' => $itemData['name'] ?? null, 
+                    'deskripsi'  => $itemData['deskripsi'] ?? null,
                     'tipe' => $itemData['tipe'] ?? null,
                     'dimensi_part' => $itemData['dimensi'] ?? null,
                     'konfigurasi' => $itemData['konfigurasi'] ?? null,
@@ -149,7 +152,7 @@ class ProductController extends Controller
                 $path = $img->store('uploads', 'public');
                 $placeText = $request->project_places[$key] ?? null; 
                 DB::table('project_references')->insert([
-                    'product_id' => $productId, 'image_path' => $path, 'place' => $placeText, 'created_at' => now(), 'updated_at' => now(),
+                    'product_id' => $productId, 'image_path' => $path, 'place' => $placeText, 'description' => $request->project_descriptions[$key] ?? null, 'created_at' => now(), 'updated_at' => now(),
                 ]);
             }
         }
@@ -362,13 +365,15 @@ public function manageData() {
         // UPDATE: Ambil data dari tabel 'customers' yang baru
         // Kita ambil semua kolom karena nanti butuh ID atau logonya
         $customerList = DB::table('customers')->orderBy('name', 'asc')->get();
-
+        $divisionList = DB::table('divisions')->orderBy('name', 'asc')->get();
         $products = DB::table('products')->orderBy('id', 'desc')->get();
-        
-        return view('input', compact('products', 'customerList')); 
-    }
+        $materialList  = DB::table('materials')->orderBy('name', 'asc')->get();
+        $finishingList = DB::table('finishings')->orderBy('name', 'asc')->get();
+        $partMaterialList  = DB::table('part_materials')->orderBy('name', 'asc')->get();
+        $configurationList = DB::table('configurations')->orderBy('name', 'asc')->get();
+        return view('input', compact('products', 'customerList', 'divisionList', 'materialList', 'finishingList', 'partMaterialList', 'configurationList'));
 
-
+}
 
 // --- HALAMAN DETAIL PRODUK (SINGLE PAGE) ---
    public function detailProduct($id) {
@@ -540,6 +545,35 @@ public function manageData() {
     }
 
 
+
+    // Halaman Kelola Divisi
+public function divisionManager() {
+    if (!session('is_admin')) return redirect('/login');
+    $divisions = DB::table('divisions')->orderBy('name', 'asc')->get();
+    return view('divisions.index', compact('divisions'));
+}
+
+// Simpan Divisi Baru
+public function storeDivision(Request $request) {
+    if (!session('is_admin')) return redirect('/login');
+    DB::table('divisions')->insert([
+        'name' => $request->name,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    return redirect('/divisions')->with('success', 'Divisi berhasil ditambahkan!');
+}
+
+// Hapus Divisi
+public function deleteDivision($id) {
+    if (!session('is_admin')) return redirect('/login');
+    DB::table('divisions')->where('id', $id)->delete();
+    return back()->with('success', 'Divisi dihapus.');
+}
+
+
+
+
     // ==========================================
     // 1. FITUR EDIT SPESIFIKASI (General, Dimensi, Gallery)
     // ==========================================
@@ -548,7 +582,11 @@ public function manageData() {
         $product = DB::table('products')->where('id', $id)->first();
         $gallery = DB::table('product_images')->where('product_id', $id)->get();
         $dimensions = DB::table('product_dimensions')->where('product_id', $id)->get();
-        return view('edits.spec', compact('product', 'gallery', 'dimensions'));
+        $divisionList = DB::table('divisions')->orderBy('name', 'asc')->get();
+        $customerList = DB::table('customers')->orderBy('name', 'asc')->get();
+        $materialList  = DB::table('materials')->orderBy('name', 'asc')->get();
+        $finishingList = DB::table('finishings')->orderBy('name', 'asc')->get();
+return view('edits.spec', compact('product', 'gallery', 'dimensions', 'divisionList', 'customerList', 'materialList', 'finishingList'));
     }
 
     public function updateSpec(Request $request, $id) {
@@ -558,9 +596,11 @@ public function manageData() {
             'nama_barang'   => $request->nama_barang,
             'jenis_material'=> $request->jenis_material,
             'finishing'     => $request->finishing,
-            'tipe'          => $request->tipe,
+           'max_load'        => $request->max_load, 
+            'divisi'          => $request->divisi,  
             'color_available' => $request->color_available,
-            'price'           => $request->price,
+            'application' => $request->application,
+          
             'updated_at'    => now(),
         ]);
 
@@ -585,31 +625,28 @@ public function manageData() {
 
         // 3. UPDATE DIMENSI (Logic Baru: Hapus Semua -> Insert Ulang)
         // Ini cara paling aman untuk one-to-many editing
-        if ($request->has('dim_panjang')) {
+        if ($request->has('dim_item_code')) {
             // A. Hapus dimensi lama
-            DB::table('product_dimensions')->where('product_id', $id)->delete();
+          DB::table('product_dimensions')->where('product_id', $id)->delete();
 
-            // B. Masukkan dimensi baru dari form edit
-            $panjang = $request->dim_panjang;
-            $lebar   = $request->dim_lebar;
-            $tinggi  = $request->dim_tinggi;
-            $kedalam = $request->dim_kedalaman;
-            $codes   = $request->dim_item_code;
+                $codes     = $request->dim_item_code;
+                $names     = $request->dim_item_name;
+                $dimension = $request->dim_dimension;
+                $colors    = $request->dim_color; 
 
-            for ($i = 0; $i < count($panjang); $i++) {
-                if (!empty($panjang[$i]) || !empty($lebar[$i])) {
-                    DB::table('product_dimensions')->insert([
-                        'product_id' => $id,
-                        'panjang'    => $panjang[$i],
-                        'lebar'      => $lebar[$i],
-                        'tinggi'     => $tinggi[$i],
-                        'kedalaman'  => $kedalam[$i],
-                        'item_code'  => $codes[$i],
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                for ($i = 0; $i < count($codes); $i++) {
+                    if (!empty($codes[$i]) || !empty($names[$i]) || !empty($dimension[$i])) {
+                        DB::table('product_dimensions')->insert([
+                            'product_id' => $id,
+                            'item_code'  => $codes[$i] ?? null,
+                            'item_name'  => $names[$i] ?? null,
+                            'panjang'    => $dimension[$i] ?? null,
+                            'color'      => $colors[$i] ?? null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
                 }
-            }
         }
 
         return redirect()->back()->with('success', 'Spesifikasi & Dimensi berhasil diupdate!');
@@ -650,6 +687,7 @@ public function manageData() {
 
                 $dataToSave = [
                     'nama_item'     => $itemData['name'],
+                    'deskripsi'  => $itemData['deskripsi'] ?? null,
                     'tipe'          => $itemData['tipe'] ?? null,
                     'dimensi_part'  => $itemData['dimensi'] ?? null,
                     'konfigurasi'   => $itemData['konfigurasi'] ?? null,
@@ -686,6 +724,7 @@ public function manageData() {
                 $dataInsert = [
                     'product_id'    => $id,
                     'nama_item'     => $newItem['name'],
+                    'deskripsi'  => $itemData['deskripsi'] ?? null,
                     'tipe'          => $newItem['tipe'] ?? null,
                     'dimensi_part'  => $newItem['dimensi'] ?? null,
                     'konfigurasi'   => $newItem['konfigurasi'] ?? null,
@@ -707,6 +746,90 @@ public function manageData() {
         // 4. Perintah Redirect (Berada di luar semua blok IF)
         return redirect()->back()->with('success', 'Komponen Parts berhasil diperbarui!');
     }
+
+
+    // Material
+public function materialManager() {
+    if (!session('is_admin')) return redirect('/login');
+    $materials = DB::table('materials')->orderBy('name', 'asc')->get();
+    return view('materials.index', compact('materials'));
+}
+
+public function storeMaterial(Request $request) {
+    if (!session('is_admin')) return redirect('/login');
+    $request->validate(['name' => 'required|string|unique:materials,name']);
+    DB::table('materials')->insert(['name' => $request->name, 'created_at' => now(), 'updated_at' => now()]);
+    return redirect('/materials')->with('success', 'Material "' . $request->name . '" berhasil ditambahkan!');
+}
+
+public function deleteMaterial($id) {
+    if (!session('is_admin')) return redirect('/login');
+    DB::table('materials')->where('id', $id)->delete();
+    return back()->with('success', 'Material berhasil dihapus.');
+}
+
+// Finishing
+public function finishingManager() {
+    if (!session('is_admin')) return redirect('/login');
+    $finishings = DB::table('finishings')->orderBy('name', 'asc')->get();
+    return view('finishings.index', compact('finishings'));
+}
+
+public function storeFinishing(Request $request) {
+    if (!session('is_admin')) return redirect('/login');
+    $request->validate(['name' => 'required|string|unique:finishings,name']);
+    DB::table('finishings')->insert(['name' => $request->name, 'created_at' => now(), 'updated_at' => now()]);
+    return redirect('/finishings')->with('success', 'Finishing "' . $request->name . '" berhasil ditambahkan!');
+}
+
+public function deleteFinishing($id) {
+    if (!session('is_admin')) return redirect('/login');
+    DB::table('finishings')->where('id', $id)->delete();
+    return back()->with('success', 'Finishing berhasil dihapus.');
+}
+
+
+// Part Material
+public function partMaterialManager() {
+    if (!session('is_admin')) return redirect('/login');
+    $partMaterials = DB::table('part_materials')->orderBy('name', 'asc')->get();
+    return view('part_materials.index', compact('partMaterials'));
+}
+
+public function storePartMaterial(Request $request) {
+    if (!session('is_admin')) return redirect('/login');
+    $request->validate(['name' => 'required|string|unique:part_materials,name']);
+    DB::table('part_materials')->insert(['name' => $request->name, 'created_at' => now(), 'updated_at' => now()]);
+    return redirect('/part-materials')->with('success', 'Material "' . $request->name . '" berhasil ditambahkan!');
+}
+
+public function deletePartMaterial($id) {
+    if (!session('is_admin')) return redirect('/login');
+    DB::table('part_materials')->where('id', $id)->delete();
+    return back()->with('success', 'Material berhasil dihapus.');
+}
+
+// Configuration
+public function configurationManager() {
+    if (!session('is_admin')) return redirect('/login');
+    $configurations = DB::table('configurations')->orderBy('name', 'asc')->get();
+    return view('configurations.index', compact('configurations'));
+}
+
+public function storeConfiguration(Request $request) {
+    if (!session('is_admin')) return redirect('/login');
+    $request->validate(['name' => 'required|string|unique:configurations,name']);
+    DB::table('configurations')->insert(['name' => $request->name, 'created_at' => now(), 'updated_at' => now()]);
+    return redirect('/configurations')->with('success', 'Konfigurasi "' . $request->name . '" berhasil ditambahkan!');
+}
+
+public function deleteConfiguration($id) {
+    if (!session('is_admin')) return redirect('/login');
+    DB::table('configurations')->where('id', $id)->delete();
+    return back()->with('success', 'Konfigurasi berhasil dihapus.');
+}
+
+
 
     // ==========================================
     // 3. FITUR EDIT PROJECT REFERENCE
@@ -735,6 +858,7 @@ public function manageData() {
             foreach($request->existing_places as $pId => $text) {
                 DB::table('project_references')->where('id', $pId)->update([
                     'place' => $text,
+                    'description' => $request->existing_descriptions[$pId] ?? null,
                     'updated_at' => now()
                 ]);
             }
@@ -751,7 +875,8 @@ public function manageData() {
                 DB::table('project_references')->insert([
                     'product_id' => $id, 
                     'image_path' => $path, 
-                    'place' => $placeText, // Simpan Tempat
+                    'place' => $placeText, 
+                    'description' => $request->project_descriptions_baru[$key] ?? null,
                     'created_at' => now(), 
                     'updated_at' => now()
                 ]);
@@ -761,3 +886,6 @@ public function manageData() {
         return redirect()->back()->with('success', 'Project Reference berhasil diupdate!');
     }
 }
+
+
+

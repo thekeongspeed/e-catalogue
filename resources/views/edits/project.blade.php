@@ -80,7 +80,7 @@
                     <p class="small fw-bold text-muted mb-3">Project yang Sudah Ada (Bisa Edit Teks / Hapus):</p>
                     <div class="row g-3 mb-4">
                         @foreach($projects as $p)
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="d-flex align-items-center gap-3 p-2 border rounded bg-light h-100">
                                 <div class="existing-img-wrapper">
                                     <input type="checkbox" name="delete_project_ids[]" value="{{ $p->id }}" class="check-delete" title="Centang untuk menghapus">
@@ -91,6 +91,8 @@
                                 <div class="flex-grow-1">
                                     <label class="small text-muted mb-1 fw-bold">Lokasi / Tempat:</label>
                                     <input type="text" name="existing_places[{{ $p->id }}]" class="form-control form-control-sm bg-white" value="{{ $p->place }}" placeholder="Nama Lokasi...">
+                                    <label class="small text-muted mb-1 fw-bold">Deskripsi:</label>
+                                     <textarea name="existing_descriptions[{{ $p->id }}]" class="form-control form-control-sm bg-white" rows="2" placeholder="Deskripsi singkat...">{{ $p->description }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -143,6 +145,10 @@
                 <div class="col-1">
                     <button type="button" class="btn btn-danger btn-sm rounded-circle" style="width:30px; height:30px; padding:0;" onclick="this.closest('.row').remove()"><i class="fas fa-times"></i></button>
                 </div>
+                <div class="col-11">
+            <label class="small text-muted mb-1 fw-bold">Deskripsi:</label>
+                <textarea name="project_descriptions_baru[]" class="form-control form-control-sm" rows="2" placeholder="Deskripsi singkat..."></textarea>
+        </div>
                 <div class="col-12 mt-1" style="display:none;">
                      <div style="width:60px; height:60px; background:#eee; border-radius:8px; overflow:hidden;">
                         <img src="" style="width:100%; height:100%; object-fit:cover;">

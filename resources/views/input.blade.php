@@ -186,7 +186,26 @@
                             </a>
                         </div>
                     </div>
+
                         
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Divisi</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-sitemap"></i></span>
+                                
+                                <select class="form-select" name="divisi" style="cursor: pointer;">
+                                    <option value="" selected>Pilih...</option>
+                                    @foreach($divisionList as $div)
+                                        <option value="{{ $div->name }}">{{ $div->name }}</option>
+                                    @endforeach
+                                </select>
+                                
+                                <a href="/divisions" class="btn btn-outline-secondary" title="Kelola Divisi" target="_blank">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+
 
                     <div class="col-md-6">
                         <label class="form-label-custom">Nama Barang</label>
@@ -196,49 +215,62 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label-custom">Tipe / Series</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-tag"></i></span>
-                            <input type="text" name="tipe" class="form-control" placeholder="Contoh: Island/Wall/Accessories">
-                        </div>
-                    </div>
+                
 
-                    <div class="col-md-4">
-                        <label class="form-label-custom">Material Utama</label>
+                   <div class="col-md-6">
+                        <label class="form-label-custom">Material</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
-                            <input type="text" name="jenis_material" class="form-control" placeholder="Contoh: Steel/Plastic">
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label-custom">Finishing</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-paint-roller"></i></span>
-                            <input type="text" name="finishing" class="form-control" placeholder="Contoh: Powder Coating">
+                            <select class="form-select" name="jenis_material" style="cursor: pointer;">
+                                <option value="" selected>Pilih...</option>
+                                @foreach($materialList as $mat)
+                                    <option value="{{ $mat->name }}">{{ $mat->name }}</option>
+                                @endforeach
+                            </select>
+                            <a href="/materials" class="btn btn-outline-secondary" title="Kelola Material" target="_blank">
+                                <i class="fas fa-plus"></i>
+                            </a>
                         </div>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label-custom">Warna Tersedia (Color Available)</label>
+                        <label class="form-label-custom">Finishing</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-palette"></i></span>
-                            <input type="text" name="color_available" class="form-control" placeholder="Contoh: White Satin/Black Satin">
+                            <span class="input-group-text"><i class="fas fa-paint-roller"></i></span>
+                            <select class="form-select" name="finishing" style="cursor: pointer;">
+                                <option value="" selected>Pilih...</option>
+                                @foreach($finishingList as $fin)
+                                    <option value="{{ $fin->name }}">{{ $fin->name }}</option>
+                                @endforeach
+                            </select>
+                            <a href="/finishings" class="btn btn-outline-secondary" title="Kelola Finishing" target="_blank">
+                                <i class="fas fa-plus"></i>
+                            </a>
                         </div>
                     </div>
 
-                   <div class="col-md-6">
-                        <label class="form-label-custom">Estimasi Harga (Price)</label>
+                                        <div class="col-md-6">
+                        <label class="form-label-custom">Max Load</label>
                         <div class="input-group">
-                            <span class="input-group-text fw-bold">Rp</span>
-                            
-                            <input type="text" id="price_display" class="form-control" placeholder="0" onkeyup="formatRupiah(this)">
-                            
-                            <input type="hidden" name="price" id="price_actual">
+                            <span class="input-group-text"><i class="fas fa-weight-hanging"></i></span>
+                            <input type="number" name="max_load" class="form-control" placeholder="Contoh: 20">
+                            <span class="input-group-text">kg</span>
                         </div>
-                      
                     </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label-custom">Application</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                            <input type="text" name="application" class="form-control" 
+                                placeholder="Contoh: Minimarket, Supermarket, Pharmacy (pisahkan dengan koma)">
+                        </div>
+                        <div class="form-text text-muted" style="font-size: 11px; margin-top: 4px;">
+                            * Pisahkan setiap item dengan tanda koma
+                        </div>
+                    </div>
+
+                   
                 </div>
             </div>
 
@@ -248,39 +280,26 @@
                 <table class="table table-borderless" id="dimensiTable">
                     <thead>
                         <tr class="border-bottom small">
-                            <th style="width: 20%">Item Code</th>
-                            <th>Panjang</th> <th>Lebar</th> <th>Tinggi</th> <th>Kedalaman</th> <th>Aksi</th>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Dimension (PxLxT)</th>
+                            <th>Color</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
 
 
                     <tbody>
-                        <tr>
+                       <tr>
                             <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
+                            <td><input type="text" name="dim_item_name[]" class="form-control" placeholder="Item Name"></td>
                             <td>
                                 <div class="input-group">
-                                    <input type="number" name="dim_panjang[]" class="form-control" placeholder="P">
+                                    <input type="text" name="dim_dimension[]" class="form-control" placeholder="45 x 50 x 100">
                                     <span class="input-group-text">mm</span>
                                 </div>
                             </td>
-                            <td>
-                                <div class="input-group">
-                                    <input type="number" name="dim_lebar[]" class="form-control" placeholder="L">
-                                    <span class="input-group-text">mm</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-                                    <input type="number" name="dim_tinggi[]" class="form-control" placeholder="T">
-                                    <span class="input-group-text">mm</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-                                    <input type="number" name="dim_kedalaman[]" class="form-control" placeholder="D">
-                                    <span class="input-group-text">mm</span>
-                                </div>
-                            </td>
+                            <td><input type="text" name="dim_color[]" class="form-control" placeholder="Contoh: White satin"></td>
                             <td><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
                         </tr>
                     </tbody>
@@ -322,11 +341,27 @@
                                 </div>
                             </div>
 
-                            
-                           <div class="col-6 col-md-3">
-                                <label class="small fw-bold">Tipe</label>
-                                <input type="text" name="items[0][tipe]" class="form-control">
+                            <div class="col-md-12">
+                                <label class="small fw-bold">Deskripsi</label>
+                                <textarea name="items[0][deskripsi]" class="form-control" rows="2" placeholder="Deskripsi singkat part..."></textarea>
                             </div>
+
+                            
+                          <div class="col-6 col-md-3">
+                                <label class="small fw-bold">Material</label>
+                                <div class="input-group">
+                                    <select class="form-select" name="items[0][tipe]" style="cursor: pointer;">
+                                        <option value="">Pilih...</option>
+                                        @foreach($partMaterialList as $pm)
+                                            <option value="{{ $pm->name }}">{{ $pm->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <a href="/part-materials" class="btn btn-outline-secondary" target="_blank" title="Kelola Material">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+
                             
                             <div class="col-6 col-md-3">
                                 <label class="small fw-bold">Dimensi</label>
@@ -338,7 +373,17 @@
                             
                             <div class="col-6 col-md-3">
                                 <label class="small fw-bold">Konfigurasi</label>
-                                <input type="text" name="items[0][konfigurasi]" class="form-control">
+                                <div class="input-group">
+                                    <select class="form-select" name="items[0][konfigurasi]" style="cursor: pointer;">
+                                        <option value="">Pilih...</option>
+                                        @foreach($configurationList as $conf)
+                                            <option value="{{ $conf->name }}">{{ $conf->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <a href="/configurations" class="btn btn-outline-secondary" target="_blank" title="Kelola Konfigurasi">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </div>
                             </div>
                             
                             <div class="col-6 col-md-3">
@@ -357,19 +402,30 @@
             </div>
 
             <div class="section-card">
-                <div class="section-label"><i class="fas fa-hard-hat me-2"></i> Project Reference</div>
-                <div id="project-container">
-                    <div class="row g-2 mb-2 align-items-center position-relative row-container">
-                        <div class="col-5"><input type="text" name="project_places[]" class="form-control" placeholder="Nama Tempat"></div>
-                        <div class="col-6 d-flex gap-2 align-items-center">
-                            <input type="file" name="project_images[]" class="form-control" accept="image/*" onchange="previewImage(this)">
-                            <div class="preview-box" style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden; display:none; flex-shrink: 0;"><img src="" style="width:100%; height:100%; object-fit:cover;"></div>
+                    <div class="section-label"><i class="fas fa-hard-hat me-2"></i> Project Reference</div>
+                    <div id="project-container">
+                        <div class="row g-2 mb-2 align-items-center position-relative row-container">
+                            <div class="col-5">
+                                <input type="text" name="project_places[]" class="form-control" placeholder="Nama Tempat">
+                            </div>
+                            <div class="col-6 d-flex gap-2 align-items-center">
+                                <input type="file" name="project_images[]" class="form-control" accept="image/*" onchange="previewImage(this)">
+                                <div class="preview-box" style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden; display:none; flex-shrink: 0;">
+                                    <img src="" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                            </div>
+                            <div class="col-11">
+                                <textarea name="project_descriptions[]" class="form-control" rows="2" placeholder="Deskripsi singkat..."></textarea>
+                            </div>
+                            <div class="col-1">
+                                <button type="button" class="btn btn-secondary btn-sm rounded-circle" disabled><i class="fas fa-times"></i></button>
+                            </div>
                         </div>
-                        <div class="col-1"><button type="button" class="btn btn-secondary btn-sm rounded-circle" disabled><i class="fas fa-times"></i></button></div>
                     </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2" onclick="addProjectInput()">
+                        <i class="fas fa-plus"></i> Tambah Project Lain
+                    </button>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2" onclick="addProjectInput()"><i class="fas fa-plus"></i> Tambah Project Lain</button>
-            </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
                 <a href="/" class="btn btn-secondary rounded-pill px-4">Batal</a>
@@ -408,38 +464,22 @@
 
         // FUNGSI TAMBAH DIMENSI (UPDATE: ADA ITEM CODE)
      // FUNGSI TAMBAH DIMENSI
-        function addDimensiRow() {
-            let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
-            let newRow = tbody.insertRow();
-            newRow.innerHTML = `
-                <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" name="dim_panjang[]" class="form-control" placeholder="P">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" name="dim_lebar[]" class="form-control" placeholder="L">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" name="dim_tinggi[]" class="form-control" placeholder="T">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <input type="number" name="dim_kedalaman[]" class="form-control" placeholder="D">
-                        <span class="input-group-text">mm</span>
-                    </div>
-                </td>
-                <td><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
-            `;
-        }
+       function addDimensiRow() {
+    let tbody = document.getElementById('dimensiTable').getElementsByTagName('tbody')[0];
+    let newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><input type="text" name="dim_item_code[]" class="form-control" placeholder="Code"></td>
+        <td><input type="text" name="dim_item_name[]" class="form-control" placeholder="Item Name"></td>
+        <td>
+                <div class="input-group">
+                    <input type="text" name="dim_dimension[]" class="form-control" placeholder="45 x 50 x 100">
+                    <span class="input-group-text">mm</span>
+                </div>
+            </td>
+         <td><input type="text" name="dim_color[]" class="form-control" placeholder="Contoh: White Satin"></td>
+        <td><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
 
         function removeRow(btn) {
             let row = btn.closest('tr');
@@ -476,7 +516,20 @@
                         </div>
                     </div>
 
-                    <div class="col-6 col-md-3"><label class="small fw-bold text-primary">Tipe</label><input type="text" name="items[${itemIndex}][tipe]" class="form-control"></div>
+                    <div class="col-md-12"><label class="small fw-bold text-primary">Deskripsi</label><textarea name="items[${itemIndex}][deskripsi]" class="form-control" rows="2" placeholder="Deskripsi singkat part..."></textarea></div>
+
+                   <div class="col-6 col-md-3">
+                        <label class="small fw-bold text-primary">Material</label>
+                        <div class="input-group">
+                            <select class="form-select" name="items[${itemIndex}][tipe]" style="cursor: pointer;">
+                                <option value="">Pilih...</option>
+                                @foreach($partMaterialList as $pm)
+                                    <option value="{{ $pm->name }}">{{ $pm->name }}</option>
+                                @endforeach
+                            </select>
+                            <a href="/part-materials" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-plus"></i></a>
+                        </div>
+                    </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="small fw-bold text-primary">Dimensi</label>
@@ -486,8 +539,20 @@
                         </div>
                     </div>
                     
-                    <div class="col-6 col-md-3"><label class="small fw-bold text-primary">Konfigurasi</label><input type="text" name="items[${itemIndex}][konfigurasi]" class="form-control"></div>
-                    
+                    <div class="col-6 col-md-3">
+                        <label class="small fw-bold text-primary">Konfigurasi</label>
+                        <div class="input-group">
+                            <select class="form-select" name="items[${itemIndex}][konfigurasi]" style="cursor: pointer;">
+                                <option value="">Pilih...</option>
+                                @foreach($configurationList as $conf)
+                                    <option value="{{ $conf->name }}">{{ $conf->name }}</option>
+                                @endforeach
+                            </select>
+                            <a href="/configurations" class="btn btn-outline-secondary" target="_blank"><i class="fas fa-plus"></i></a>
+                        </div>
+                    </div>
+
+
                     <div class="col-6 col-md-3">
                         <label class="small fw-bold text-primary">Load</label>
                         <div class="input-group">
@@ -503,43 +568,32 @@
             itemIndex++;
         }
 
-        function addProjectInput() {
-            const div = document.createElement('div');
-            div.className = 'row g-2 mb-2 align-items-center position-relative row-container';
-            div.innerHTML = `
-                <div class="col-5"><input type="text" name="project_places[]" class="form-control" placeholder="Nama Tempat"></div>
-                <div class="col-6 d-flex gap-2 align-items-center">
-                    <input type="file" name="project_images[]" class="form-control" accept="image/*" onchange="previewImage(this)">
-                    <div class="preview-box" style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden; display:none; flex-shrink: 0;"><img src="" style="width:100%; height:100%; object-fit:cover;"></div>
-                </div>
-                <div class="col-1"><button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="this.closest('.row').remove()"><i class="fas fa-times"></i></button></div>
-            `;
-            document.getElementById('project-container').appendChild(div);
-        }
+     function addProjectInput() {
+    const div = document.createElement('div');
+    div.className = 'row g-2 mb-2 align-items-center position-relative row-container';
+    div.innerHTML = `
+        <div class="col-5">
+            <input type="text" name="project_places[]" class="form-control" placeholder="Nama Tempat">
+        </div>
+        <div class="col-6 d-flex gap-2 align-items-center">
+            <input type="file" name="project_images[]" class="form-control" accept="image/*" onchange="previewImage(this)">
+            <div class="preview-box" style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden; display:none; flex-shrink: 0;">
+                <img src="" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        </div>
+        <div class="col-11">
+            <textarea name="project_descriptions[]" class="form-control" rows="2" placeholder="Deskripsi singkat..."></textarea>
+        </div>
+        <div class="col-1">
+            <button type="button" class="btn btn-danger btn-sm rounded-circle" onclick="this.closest('.row-container').remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    document.getElementById('project-container').appendChild(div);
+}
     
 
-        // --- FUNGSI FORMAT RUPIAH (TITIK OTOMATIS) ---
-        function formatRupiah(input) {
-            // 1. Ambil value yang diketik, hapus semua karakter selain angka
-            // Contoh: User ngetik "1.000.a" -> jadi "1000"
-            let value = input.value.replace(/[^0-9]/g, '');
-
-            // 2. Cek jika kosong
-            if (!value) {
-                input.value = '';
-                document.getElementById('price_actual').value = '';
-                return;
-            }
-
-            // 3. Simpan nilai MURNI (angka saja) ke input hidden
-            // Ini yang akan dibaca oleh Controller Laravel
-            document.getElementById('price_actual').value = value;
-
-            // 4. Format tampilan agar ada titik ribuan
-            // Fungsi toLocaleString('id-ID') otomatis ngasih titik ala Indonesia
-            input.value = parseInt(value).toLocaleString('id-ID');
-        }
-            
         // 1. Jika Berhasil (Success)
         @if(session('success'))
             Swal.fire({
@@ -572,6 +626,8 @@
             });
         @endif
         
+
+
     </script>
 </body>
 </html>

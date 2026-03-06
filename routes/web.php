@@ -73,3 +73,30 @@ Route::get('/fix-images', function () {
     }
     return "Berhasil memperbaiki $count produk! Silakan buka halaman Katalog sekarang.";
 });
+
+
+
+// Divisi
+Route::get('/divisions', [ProductController::class, 'divisionManager']);
+Route::post('/divisions/store', [ProductController::class, 'storeDivision']);
+Route::delete('/divisions/{id}', [ProductController::class, 'deleteDivision']);
+
+// Material
+Route::get('/materials', [ProductController::class, 'materialManager']);
+Route::post('/materials/store', [ProductController::class, 'storeMaterial']);
+Route::delete('/materials/{id}', [ProductController::class, 'deleteMaterial']);
+
+// Finishing
+Route::get('/finishings', [ProductController::class, 'finishingManager']);
+Route::post('/finishings/store', [ProductController::class, 'storeFinishing']);
+Route::delete('/finishings/{id}', [ProductController::class, 'deleteFinishing']);
+
+// Part Material
+Route::get('/part-materials', [ProductController::class, 'partMaterialManager']);
+Route::post('/part-materials/store', [ProductController::class, 'storePartMaterial']);
+Route::delete('/part-materials/{id}', [ProductController::class, 'deletePartMaterial']);
+
+// Configuration
+Route::get('/configurations', [ProductController::class, 'configurationManager']);
+Route::post('/configurations/store', [ProductController::class, 'storeConfiguration']);
+Route::delete('/configurations/{id}', [ProductController::class, 'deleteConfiguration']);
